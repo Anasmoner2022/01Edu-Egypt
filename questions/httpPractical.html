@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go Web Dev: HTTP & Routing - Practical Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.8em;
+            margin-bottom: 15px;
+        }
+
+        .header .subtitle {
+            color: #666;
+            font-size: 1.2em;
+            line-height: 1.8;
+        }
+
+        .challenge-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            display: inline-block;
+            margin: 15px 0;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .name-entry {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .name-entry h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .name-input {
+            padding: 15px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            font-size: 1.1em;
+            width: 300px;
+            margin-right: 10px;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .progress-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .question-card {
+            background: white;
+            padding: 35px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        .question-card.active {
+            display: block;
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #f0f0f0;
+        }
+
+        .question-number {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .category {
+            background: #e7f3ff;
+            color: #1976D2;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+
+        .category.practice { background: #fff3cd; color: #856404; }
+        .category.debugging { background: #f8d7da; color: #721c24; }
+        .category.theory { background: #d4edda; color: #155724; }
+        .category.scenario { background: #e7f3ff; color: #1976D2; }
+
+        .difficulty {
+            padding: 6px 18px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .difficulty.easy { background: #d4edda; color: #155724; }
+        .difficulty.medium { background: #fff3cd; color: #856404; }
+        .difficulty.hard { background: #f8d7da; color: #721c24; }
+
+        .question-title {
+            font-size: 1.6em;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .scenario-box {
+            background: #f8f9fa;
+            border-left: 5px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .scenario-box h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .code-block {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            overflow-x: auto;
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+
+        .code-block .keyword { color: #c678dd; }
+        .code-block .string { color: #98c379; }
+        .code-block .comment { color: #5c6370; font-style: italic; }
+        .code-block .function { color: #61afef; }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .option {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            display: flex;
+            align-items: start;
+            gap: 15px;
+        }
+
+        .option:hover {
+            background: #e9ecef;
+            transform: translateX(8px);
+        }
+
+        .option.selected {
+            background: #e7f3ff;
+            border-color: #667eea;
+        }
+
+        .option.correct {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .option.incorrect {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+
+        .option-letter {
+            background: #667eea;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            flex-shrink: 0;
+        }
+
+        .option.correct .option-letter {
+            background: #28a745;
+        }
+
+        .option.incorrect .option-letter {
+            background: #dc3545;
+        }
+
+        .option-content {
+            flex: 1;
+        }
+
+        .explanation {
+            background: #e7f3ff;
+            border-left: 5px solid #2196F3;
+            padding: 25px;
+            margin-top: 25px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .explanation.show {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .explanation-title {
+            font-weight: bold;
+            color: #1976D2;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 18px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-check {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-check:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-check:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-next {
+            background: #28a745;
+            color: white;
+            display: none;
+        }
+
+        .btn-next:hover {
+            background: #218838;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .results {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        .results h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .score-display {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 40px 0;
+        }
+
+        .score-circle {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+
+        .score-number {
+            color: white;
+            font-size: 4em;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .score-label {
+            color: white;
+            font-size: 1.2em;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+
+        .grade-box {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+
+        .grade {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .grade.excellent { color: #28a745; }
+        .grade.good { color: #17a2b8; }
+        .grade.fair { color: #ffc107; }
+        .grade.poor { color: #dc3545; }
+
+        .performance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .perf-stat {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .perf-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .perf-label {
+            color: #666;
+            margin-top: 10px;
+            font-size: 1.1em;
+        }
+
+        .leaderboard {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .leaderboard h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .leaderboard-entry {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rank {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 1.2em;
+            width: 40px;
+        }
+
+        .btn-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 18px 40px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .recommendations {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .recommendations h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .recommendations ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .recommendations li {
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .recommendations li:last-child {
+            border-bottom: none;
+        }
+
+        .share-section {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+
+        .share-section h3 {
+            margin-bottom: 15px;
+        }
+
+        .share-text {
+            background: white;
+            color: #333;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.95em;
+            margin: 15px 0;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2em; }
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .score-display { flex-direction: column; align-items: center; }
+            .name-input { width: 100%; margin-bottom: 15px; }
+            .buttons { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Go Web Development</h1>
+            <div class="subtitle">
+                <strong>HTTP & Routing - Practical Challenge</strong><br>
+                Test your mastery of Let's Go Ch 2 & Go Web Programming Ch 3
+            </div>
+            <div class="challenge-badge">40 Real-World Questions</div>
+        </div>
+
+        <div class="name-entry" id="nameEntry">
+            <h2>👋 Let's Get Started!</h2>
+            <p style="color: #666; margin-bottom: 20px;">Enter your name to begin the challenge</p>
+            <div>
+                <input type="text" id="playerName" class="name-input" placeholder="Your Name" />
+                <button class="btn-start" onclick="startQuiz()">Start Challenge 🚀</button>
+            </div>
+        </div>
+
+        <div class="progress-section" id="progressSection" style="display: none;">
+            <div class="progress-info">
+                <div><strong id="playerDisplay"></strong></div>
+                <div id="timeDisplay" style="font-weight: bold; color: #667eea;"></div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress">0/40</div>
+            </div>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="correctCount">0</div>
+                    <div class="stat-label">Correct</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="wrongCount">0</div>
+                    <div class="stat-label">Wrong</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="accuracyCount">0%</div>
+                    <div class="stat-label">Accuracy</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="streakCount">0</div>
+                    <div class="stat-label">Streak</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="quiz-container"></div>
+        
+        <div class="results" id="results"></div>
+    </div>
+
+    <script>
+        const quizData = [
+            // PRACTICAL SCENARIOS
+            {
+                category: "scenario",
+                difficulty: "medium",
+                question: "Building a Blog API",
+                scenario: "You're building a simple blog API. You need a handler that returns a list of blog posts in JSON format.",
+                code: `func postsHandler(w http.ResponseWriter, r *http.Request) {
+    posts := []string{"First Post", "Second Post", "Third Post"}
+    // What should you do here?
+}`,
+                options: [
+                    "Just write the slice directly: w.Write(posts)",
+                    "Convert to JSON and set correct header: w.Header().Set('Content-Type', 'application/json'); json.NewEncoder(w).Encode(posts)",
+                    "Print as string: fmt.Fprintf(w, '%v', posts)",
+                    "Use http.Error to send the posts"
+                ],
+                correct: 1,
+                explanation: "When returning JSON: 1) Set Content-Type header to 'application/json', 2) Use json.NewEncoder(w).Encode() or json.Marshal(). Headers must be set BEFORE writing the body."
+            },
+            {
+                category: "scenario",
+                difficulty: "hard",
+                question: "User Authentication Check",
+                scenario: "You need to check if a user is authenticated before showing their profile. If not authenticated, redirect to login.",
+                code: `func profileHandler(w http.ResponseWriter, r *http.Request) {
+    token := r.URL.Query().Get("token")
+    if token == "" {
+        // How do you redirect?
+    }
+    // Show profile...
+}`,
+                options: [
+                    "w.Redirect('/login')",
+                    "http.Redirect(w, r, '/login', 302)",
+                    "http.Redirect(w, r, '/login', http.StatusFound)",
+                    "Both B and C are correct"
+                ],
+                correct: 3,
+                explanation: "http.Redirect(w, r, url, statusCode) is the correct function. 302 and http.StatusFound are equivalent. Using the constant is more readable."
+            },
+            {
+                category: "practice",
+                difficulty: "easy",
+                question: "Create a Health Check Endpoint",
+                scenario: "Every web service needs a /health endpoint that returns 'OK' with 200 status.",
+                code: `func healthHandler(w http.ResponseWriter, r *http.Request) {
+    // Complete this handler
+}`,
+                options: [
+                    "fmt.Fprintf(w, 'OK')",
+                    "w.WriteHeader(200); w.Write([]byte('OK'))",
+                    "http.Error(w, 'OK', 200)",
+                    "All of the above work"
+                ],
+                correct: 0,
+                explanation: "Option A is simplest and correct. When you write without calling WriteHeader(), Go defaults to 200. Options B works but is verbose. Option C is wrong - http.Error is for errors, not success messages."
+            },
+            {
+                category: "debugging",
+                difficulty: "medium",
+                question: "Why Isn't My JSON Being Sent?",
+                code: `func apiHandler(w http.ResponseWriter, r *http.Request) {
+    data := map[string]string{"status": "ok"}
+    json.NewEncoder(w).Encode(data)
+    w.Header().Set("Content-Type", "application/json")
+}`,
+                options: [
+                    "The code is correct",
+                    "Headers must be set BEFORE encoding",
+                    "Need to call w.WriteHeader(200) first",
+                    "Should use json.Marshal instead"
+                ],
+                correct: 1,
+                explanation: "BUG: Headers are set AFTER writing the body! Headers must be set before any w.Write() call. Move w.Header().Set() to the first line."
+            },
+            {
+                category: "theory",
+                difficulty: "easy",
+                question: "What Does http.HandleFunc Do?",
+                options: [
+                    "Creates a new HTTP server",
+                    "Registers a handler function for a URL pattern",
+                    "Handles HTTP requests",
+                    "Starts listening on a port"
+                ],
+                correct: 1,
+                explanation: "http.HandleFunc() registers a handler function for a specific URL pattern on the DefaultServeMux. It doesn't start the server (that's ListenAndServe) or handle requests directly."
+            },
+            {
+                category: "practice",
+                difficulty: "medium",
+                question: "Parse Form Data",
+                scenario: "A user submits a login form with username and password.",
+                code: `// POST request with form data: username=alice&password=secret123
+
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+    // How do you get the username?
+}`,
+                options: [
+                    "username := r.Form['username']",
+                    "username := r.FormValue('username')",
+                    "username := r.PostForm['username']",
+                    "username := r.Body.Get('username')"
+                ],
+                correct: 1,
+                explanation: "r.FormValue('username') is the easiest way. It automatically parses the form (calls r.ParseForm()) and returns the value. Works for both GET and POST."
+            },
+            {
+                category: "scenario",
+                difficulty: "hard",
+                question: "Multiple Routes - What Gets Matched?",
+                code: `http.HandleFunc("/", homeHandler)
+http.HandleFunc("/api/", apiHandler)
+http.HandleFunc("/api/users", usersHandler)
+
+// Request: GET /api/users`,
+                options: [
+                    "homeHandler",
+                    "apiHandler",
+                    "usersHandler",
+                    "Returns 404"
+                ],
+                correct: 2,
+                explanation: "usersHandler wins! ServeMux chooses the most specific (longest) matching pattern. /api/users is more specific than /api/, which is more specific than /."
+            },
+            {
+                category: "debugging",
+                difficulty: "easy",
+                question: "Server Won't Start!",
+                code: `func main() {
+    http.HandleFunc("/", homeHandler)
+    fmt.Println("Server started")
+}`,
+                options: [
+                    "Missing http.ListenAndServe()",
+                    "Port number is wrong",
+                    "Handler is incorrect",
+                    "Need to import 'server' package"
+                ],
+                correct: 0,
+                explanation: "The server never starts! You must call http.ListenAndServe(':8080', nil) to actually start listening for requests."
+            },
+            {
+                category: "theory",
+                difficulty: "medium",
+                question: "What Is ServeMux?",
+                options: [
+                    "A web server",
+                    "An HTTP request router/multiplexer",
+                    "A middleware system",
+                    "A template engine"
+                ],
+                correct: 1,
+                explanation: "ServeMux is an HTTP request multiplexer. It matches the URL of incoming requests against registered patterns and calls the corresponding handler."
+            },
+            {
+                category: "practice",
+                difficulty: "medium",
+                question: "Serve Static Files",
+                scenario: "You want to serve CSS/JS files from a './public' directory at the /static/ URL path.",
+                options: [
+                    "http.Handle('/static/', http.FileServer(http.Dir('./public')))",
+                    "http.Handle('/static/', http.StripPrefix('/static/', http.FileServer(http.Dir('./public'))))",
+                    "http.ServeFiles('/static/', './public')",
+                    "http.Static('/static/', './public')"
+                ],
+                correct: 1,
+                explanation: "Use http.StripPrefix to remove '/static/' from the URL before looking for the file in './public'. Without it, the server would look for './public/static/file.css' instead of './public/file.css'."
+            },
+            {
+                category: "scenario",
+                difficulty: "hard",
+                question: "RESTful API Design",
+                scenario: "You're building a REST API for managing books. How should you handle different HTTP methods?",
+                code: `func booksHandler(w http.ResponseWriter, r *http.Request) {
+    // What's the best practice?
+}`,
+                options: [
+                    "Create separate handlers for each method: getBooksHandler, postBooksHandler",
+                    "Check r.Method and handle accordingly: switch r.Method { case 'GET': ... case 'POST': ... }",
+                    "Use different URL patterns: /books/get, /books/post",
+                    "Only support GET requests"
+                ],
+                correct: 1,
+                explanation: "Best practice: Use one handler per resource and check r.Method. This follows REST principles where the same URL supports different operations via HTTP methods (GET, POST, PUT, DELETE)."
+            },
+            {
+                category: "debugging",
+                difficulty: "medium",
+                question: "Headers Not Working!",
+                code: `func handler(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintf(w, "Hello")
+    w.Header().Set("X-Custom", "value")
+}`,
+                options: [
+                    "The code is correct",
+                    "Need to use w.WriteHeader() first",
+                    "Headers must be set BEFORE fmt.Fprintf",
+                    "Can't set custom headers"
+                ],
+                correct: 2,
+                explanation: "BUG: Headers are written when you first write to the body. Move w.Header().Set() BEFORE fmt.Fprintf(). Once you write the body, headers are already sent."
+            },
+            {
+                category: "theory",
+                difficulty: "easy",
+                question: "What Does ResponseWriter.Write() Return?",
+                options: [
+                    "Nothing (void)",
+                    "Number of bytes written and an error",
+                    "The response status code",
+                    "Boolean for success/failure"
+                ],
+                correct: 1,
+                explanation: "Write() returns (int, error) - the number of bytes written and any error. This follows Go's io.Writer interface convention."
+            },
+            {
+                category: "practice",
+                difficulty: "hard",
+                question: "Request Body Handling",
+                scenario: "You need to read JSON data from the request body for a POST /api/users endpoint.",
+                code: `type User struct {
+    Name  string
+    Email string
+}
+
+func createUserHandler(w http.ResponseWriter, r *http.Request) {
+    // How do you parse the JSON body?
+}`,
+                options: [
+                    "var u User; json.Unmarshal(r.Body, &u)",
+                    "var u User; json.NewDecoder(r.Body).Decode(&u); defer r.Body.Close()",
+                    "var u User; r.ParseJSON(&u)",
+                    "var u User; u = r.Body.JSON()"
+                ],
+                correct: 1,
+                explanation: "Use json.NewDecoder(r.Body).Decode(&u). Remember to defer r.Body.Close() after reading. Option A won't work because Unmarshal needs []byte, not io.Reader."
+            },
+            {
+                category: "scenario",
+                difficulty: "medium",
+                question: "Custom 404 Handler",
+                scenario: "You want a custom 404 page instead of Go's default 'page not found'.",
+                options: [
+                    "http.Handle404(customHandler)",
+                    "Register a handler for all paths: http.HandleFunc('/*', customHandler)",
+                    "Create custom ServeMux and handle all unmatched routes",
+                    "Both B and C work"
+                ],
+                correct: 3,
+                explanation: "Go doesn't have a built-in 404 handler setter. Use a catch-all pattern (less ideal) or create a custom ServeMux where you can control all routing and provide a default handler."
+            },
+            {
+                category: "debugging",
+                difficulty: "easy",
+                question: "Query Parameters Missing!",
+                code: `// URL: /search?q=golang
+
+func searchHandler(w http.ResponseWriter, r *http.Request) {
+    query := r.Query.Get("q")  // Always empty!
+    fmt.Fprintf(w, query)
+}`,
+                options: [
+                    "Should be r.URL.Query().Get('q')",
+                    "Should be r.QueryParams.Get('q')",
+                    "Should be r.Form['q']",
+                    "The code is correct"
+                ],
+                correct: 0,
+                explanation: "BUG: There's no r.Query field! Use r.URL.Query().Get('q'). The Query() method parses the URL's query string and returns url.Values."
+            },
+            {
+                category: "theory",
+                difficulty: "medium",
+                question: "What Happens If You Don't Call WriteHeader()?",
+                options: [
+                    "Error is returned",
+                    "Defaults to 200 OK",
+                    "Defaults to 500 Error",
+                    "No status code is sent"
+                ],
+                correct: 1,
+                explanation: "If you don't call WriteHeader(), Go automatically writes 200 OK when you first call Write(). This is usually fine for successful responses."
+            },
+            {
+                category: "practice",
+                difficulty: "medium",
+                question: "Method-Based Routing",
+                code: `func apiHandler(w http.ResponseWriter, r *http.Request) {
+    if r.Method == "GET" {
+        // Handle GET
+    } else if r.Method == "POST" {
+        // Handle POST
+    } else {
+        // What should you send for unsupported methods?
+    }
+}`,
+                options: [
+                    "http.Error(w, 'Bad Request', 400)",
+                    "http.Error(w, 'Method Not Allowed', 405)",
+                    "http.Error(w, 'Not Found', 404)",
+                    "http.Error(w, 'Forbidden', 403)"
+                ],
+                correct: 1,
+                explanation: "Use 405 Method Not Allowed for unsupported HTTP methods. This tells the client they're hitting the right endpoint but using the wrong method."
+            },
+            {
+                category: "scenario",
+                difficulty: "hard",
+                question: "Handling File Uploads",
+                scenario: "Users can upload profile pictures via a multipart form.",
+                code: `func uploadHandler(w http.ResponseWriter, r *http.Request) {
+    // How do you access the uploaded file?
+}`,
+                options: [
+                    "file := r.File('picture')",
+                    "file, _, err := r.FormFile('picture')",
+                    "file := r.Upload('picture')",
+                    "file := r.MultipartFile('picture')"
+                ],
+                correct: 1,
+                explanation: "Use r.FormFile('picture') which returns (multipart.File, *multipart.FileHeader, error). Don't forget to r.ParseMultipartForm() first and close the file when done."
+            },
+            {
+                category: "debugging",
+                difficulty: "medium",
+                question: "Status Code Not Changing!",
+                code: `func handler(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintf(w, "Error occurred")
+    w.WriteHeader(500)
+}`,
+                options: [
+                    "The code is correct",
+                    "WriteHeader must be called BEFORE writing body",
+                    "Should use http.Error instead",
+                    "Need to call w.Flush() first"
+                ],
+                correct: 1,
+                explanation: "BUG: WriteHeader() must be called BEFORE any Write(). Once you write the body, the headers (including status code) are already sent. Move WriteHeader(500) to the first line."
+            },
+            {
+                category: "theory",
+                difficulty: "easy",
+                question: "What Port Does ':8080' Listen On?",
+                code: `http.ListenAndServe(":8080", nil)`,
+                options: [
+                    "Port 80",
+                    "Port 8080",
+                    "Port 443",
+                    "Random port"
+                ],
+                correct: 1,
+                explanation: "The ':8080' notation means listen on port 8080 on all network interfaces. The colon followed by a number specifies the port."
+            },
+            {
+                category: "practice",
+                difficulty: "hard",
+                question: "Context and Timeouts",
+                scenario: "You want to enforce a 5-second timeout on a database query during request handling.",
+                options: [
+                    "time.Sleep(5 * time.Second)",
+                    "Use r.Context() with context.WithTimeout",
+                    "Set http.Server.ReadTimeout = 5",
+                    "Use time.After() channel"
+                ],
+                correct: 1,
+                explanation: "Use r.Context() which provides request-scoped context. Create a timeout context with context.WithTimeout() and pass it to your database query. This properly cancels the query if it takes too long."
+            },
+            {
+                category: "scenario",
+                difficulty: "medium",
+                question: "CORS Headers",
+                scenario: "Your API needs to accept requests from a frontend running on http://localhost:3000.",
+                code: `func apiHandler(w http.ResponseWriter, r *http.Request) {
+    // How do you enable CORS?
+}`,
+                options: [
+                    "w.EnableCORS()",
+                    "w.Header().Set('Access-Control-Allow-Origin', '*')",
+                    "w.Header().Set('Access-Control-Allow-Origin', 'http://localhost:3000')",
+                    "http.SetCORS(w, 'http://localhost:3000')"
+                ],
+                correct: 2,
+                explanation: "Set the Access-Control-Allow-Origin header to the specific origin. Using '*' works but is less secure. For production, specify exact origins and handle preflight OPTIONS requests."
+            },
+            {
+                category: "debugging",
+                difficulty: "easy",
+                question: "Can't Access Request Path!",
+                code: `func handler(w http.ResponseWriter, r *http.Request) {
+    path := r.Path  // Doesn't exist!
+}`,
+                options: [
+                    "Should be r.URL.Path",
+                    "Should be r.RequestPath",
+                    "Should be r.URI",
+                    "Should be r.Route"
+                ],
+                correct: 0,
+                explanation: "BUG: There's no r.Path field! Use r.URL.Path to get the path portion of the request URL. r.URL is of type *url.URL which has the Path field."
+            },
+            {
+                category: "theory",
+                difficulty: "medium",
+                question: "What's the Difference Between Handle and HandleFunc?",
+                options: [
+                    "No difference, they're aliases",
+                    "Handle takes http.Handler, HandleFunc takes a function",
+                    "HandleFunc is for GET only",
+                    "Handle is deprecated"
+                ],
+                correct: 1,
+                explanation: "http.Handle() expects a type implementing http.Handler interface (ServeHTTP method). http.HandleFunc() is a convenience that takes a regular function with the handler signature."
+            },
+            {
+                category: "practice",
+                difficulty: "medium",
+                question: "Setting Multiple Headers",
+                code: `func handler(w http.ResponseWriter, r *http.Request) {
+    // Set Content-Type to JSON and Cache-Control to no-cache
+}`,
+                options: [
+                    "w.Header().Set('Content-Type', 'application/json'); w.Header().Set('Cache-Control', 'no-cache')",
+                    "w.SetHeader('Content-Type: application/json'); w.SetHeader('Cache-Control: no-cache')",
+                    "w.Headers['Content-Type'] = 'application/json'; w.Headers['Cache-Control'] = 'no-cache'",
+                    "http.SetHeaders(w, {'Content-Type': 'application/json', 'Cache-Control': 'no-cache'})"
+                ],
+                correct: 0,
+                explanation: "Call w.Header().Set() for each header. w.Header() returns http.Header (a map), and Set() adds or updates a header value. Remember to do this before writing the body."
+            },
+            {
+                category: "scenario",
+                difficulty: "hard",
+                question: "Middleware Pattern",
+                scenario: "You want to log all incoming requests before handling them.",
+                code: `func loggingMiddleware(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        log.Printf("%s %s", r.Method, r.URL.Path)
+        // What goes here?
+    })
+}`,
+                options: [
+                    "return next",
+                    "next.ServeHTTP(w, r)",
+                    "next(w, r)",
+                    "http.Handle(next)"
+                ],
+                correct: 1,
+                explanation: "Call next.ServeHTTP(w, r) to pass the request to the next handler in the chain. This is the standard middleware pattern in Go."
+            },
+            {
+                category: "debugging",
+                difficulty: "medium",
+                question: "Redirect Not Working!",
+                code: `func handler(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("Location", "/new-page")
+    w.WriteHeader(302)
+    fmt.Fprintf(w, "Redirecting...")
+}`,
+                options: [
+                    "The code is correct",
+                    "Should use http.Redirect instead",
+                    "Status code should be 301",
+                    "Both A and B are correct"
+                ],
+                correct: 3,
+                explanation: "The code works but http.Redirect(w, r, '/new-page', 302) is cleaner and handles all the details for you. It sets the Location header, status code, and writes a simple body."
+            },
+            {
+                category: "theory",
+                difficulty: "easy",
+                question: "What Does http.Error() Do?",
+                options: [
+                    "Returns an error object",
+                    "Sets status code, Content-Type, and writes message",
+                    "Logs an error",
+                    "Panics with an error"
+                ],
+                correct: 1,
+                explanation: "http.Error(w, message, statusCode) is a helper that: 1) Sets Content-Type to 'text/plain; charset=utf-8', 2) Writes the status code, 3) Writes the message with a trailing newline."
+            },
+            {
+                category: "practice",
+                difficulty: "hard",
+                question: "Custom Server Configuration",
+                scenario: "You need a server with custom timeouts and TLS.",
+                code: `func main() {
+    // How do you create a custom server?
+}`,
+                options: [
+                    "Just use http.ListenAndServe() with extra parameters",
+                    "Create &http.Server{} with custom fields, then call ListenAndServe() or ListenAndServeTLS()",
+                    "Use http.NewServer() with options",
+                    "Can't customize server, use defaults"
+                ],
+                correct: 1,
+                explanation: "Create &http.Server{Addr: ':8080', Handler: myHandler, ReadTimeout: 10*time.Second, WriteTimeout: 10*time.Second} and call server.ListenAndServe(). This gives you full control."
+            },
+            {
+                category: "scenario",
+                difficulty: "medium",
+                question: "URL Parameter Extraction",
+                scenario: "You have a URL like /user/123 and need to extract '123'.",
+                code: `// URL pattern: /user/123
+// Standard library ServeMux doesn't support path params!`,
+                options: [
+                    "Use r.PathParams['id']",
+                    "Parse r.URL.Path manually with strings.Split or strings.TrimPrefix",
+                    "Use r.Vars()['id']",
+                    "Standard library can't do this, use a third-party router"
+                ],
+                correct: 3,
+                explanation: "Trick question! Standard ServeMux doesn't support path parameters. You need to parse r.URL.Path yourself OR use a third-party router like gorilla/mux, chi, or httprouter. Most real projects use a router library."
+            },
+            {
+                category: "debugging",
+                difficulty: "easy",
+                question: "POST Form Not Parsing!",
+                code: `func handler(w http.ResponseWriter, r *http.Request) {
+    username := r.PostFormValue("username")  // Always empty!
+}`,
+                options: [
+                    "Should be r.FormValue()",
+                    "Need to call r.ParseForm() first",
+                    "PostFormValue() doesn't need ParseForm(), something else is wrong",
+                    "Should use r.Form['username']"
+                ],
+                correct: 2,
+                explanation: "PostFormValue() automatically calls ParseForm() if needed. If it's empty, check: 1) Is Content-Type 'application/x-www-form-urlencoded'? 2) Is the field name correct? 3) Is it actually being sent?"
+            },
+            {
+                category: "theory",
+                difficulty: "medium",
+                question: "What's the Default Handler If You Pass nil to ListenAndServe?",
+                code: `http.ListenAndServe(":8080", nil)`,
+                options: [
+                    "No handler, returns error",
+                    "http.DefaultServeMux",
+                    "Creates a new empty ServeMux",
+                    "A basic 'Hello World' handler"
+                ],
+                correct: 1,
+                explanation: "Passing nil uses http.DefaultServeMux, which is why you can use http.HandleFunc() without creating a custom mux. However, using a custom ServeMux is safer for production."
+            },
+            {
+                category: "practice",
+                difficulty: "medium",
+                question: "Reading Request Headers",
+                code: `func handler(w http.ResponseWriter, r *http.Request) {
+    // Get the User-Agent header
+}`,
+                options: [
+                    "userAgent := r.Header.Get('User-Agent')",
+                    "userAgent := r.GetHeader('User-Agent')",
+                    "userAgent := r.Headers['User-Agent']",
+                    "userAgent := r.UserAgent()"
+                ],
+                correct: 0,
+                explanation: "Use r.Header.Get('User-Agent'). r.Header is of type http.Header (a map), and Get() retrieves the value. Header names are case-insensitive."
+            },
+            {
+                category: "scenario",
+                difficulty: "hard",
+                question: "Building a Rate Limiter",
+                scenario: "You want to limit each IP to 100 requests per minute.",
+                options: [
+                    "Use r.RemoteAddr to get IP, track in a map with timestamps",
+                    "Use http.RateLimit() middleware",
+                    "Set server.MaxRequests = 100",
+                    "Can't be done in Go standard library"
+                ],
+                correct: 0,
+                explanation: "Standard library doesn't have built-in rate limiting. You need to: 1) Get IP from r.RemoteAddr, 2) Track requests in a map with timestamps, 3) Implement cleanup. In production, use packages like 'golang.org/x/time/rate' or middleware."
+            },
+            {
+                category: "debugging",
+                difficulty: "medium",
+                question: "WriteHeader Called Twice!",
+                code: `func handler(w http.ResponseWriter, r *http.Request) {
+    w.WriteHeader(200)
+    // ... some logic ...
+    if err != nil {
+        w.WriteHeader(500)  // Warning in logs!
+    }
+}`,
+                options: [
+                    "This is fine, status updates correctly",
+                    "Second WriteHeader() call is ignored, stays 200",
+                    "Causes a panic",
+                    "Both status codes are sent"
+                ],
+                correct: 1,
+                explanation: "WriteHeader() can only be called once. Subsequent calls are ignored (and logged as warnings). First call wins. To fix: don't call WriteHeader(200) early (it's the default anyway), or restructure your logic."
+            },
+            {
+                category: "theory",
+                difficulty: "easy",
+                question: "What Does the '/' Pattern Match?",
+                code: `http.HandleFunc("/", handler)`,
+                options: [
+                    "Only the root path",
+                    "All paths that don't match other patterns",
+                    "Only exactly '/'",
+                    "Nothing, it's invalid"
+                ],
+                correct: 1,
+                explanation: "'/' is a special pattern that matches all paths. It acts as a catch-all for any request that doesn't match a more specific pattern. It's the least specific pattern."
+            },
+            {
+                category: "practice",
+                difficulty: "hard",
+                question: "Testing HTTP Handlers",
+                scenario: "You want to write a test for your handler.",
+                code: `func TestHandler(t *testing.T) {
+    // How do you test an HTTP handler?
+}`,
+                options: [
+                    "Start a real server with http.ListenAndServe and make HTTP requests",
+                    "Use httptest.NewRecorder() and http.Request to test handlers without a server",
+                    "Can't test handlers, only integration test with real server",
+                    "Use http.Test() function"
+                ],
+                correct: 1,
+                explanation: "Use httptest.NewRecorder() as the ResponseWriter and create a fake *http.Request. Call your handler directly. This tests handlers without starting a real server - much faster and easier!"
+            }
+        ];
+
+        let playerName = "";
+        let currentQuestion = 0;
+        let correctAnswers = 0;
+        let wrongAnswers = 0;
+        let selectedAnswer = null;
+        let streak = 0;
+        let maxStreak = 0;
+        let startTime = null;
+        let questionTimes = [];
+        let categoryScores = {
+            scenario: { correct: 0, total: 0 },
+            practice: { correct: 0, total: 0 },
+            debugging: { correct: 0, total: 0 },
+            theory: { correct: 0, total: 0 }
+        };
+
+        // Shuffle questions
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        quizData = shuffle(quizData);
+
+        function startQuiz() {
+            const nameInput = document.getElementById('playerName');
+            playerName = nameInput.value.trim();
+            
+            if (!playerName) {
+                alert('Please enter your name!');
+                return;
+            }
+
+            document.getElementById('nameEntry').style.display = 'none';
+            document.getElementById('progressSection').style.display = 'block';
+            document.getElementById('playerDisplay').textContent = `👤 ${playerName}`;
+            
+            startTime = new Date();
+            renderQuestion();
+            updateTimer();
+        }
+
+        function updateTimer() {
+            setInterval(() => {
+                if (startTime && currentQuestion < quizData.length) {
+                    const elapsed = Math.floor((new Date() - startTime) / 1000);
+                    const minutes = Math.floor(elapsed / 60);
+                    const seconds = elapsed % 60;
+                    document.getElementById('timeDisplay').textContent = 
+                        `⏱️ ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        function renderQuestion() {
+            const container = document.getElementById('quiz-container');
+            const q = quizData[currentQuestion];
+            
+            const questionCard = document.createElement('div');
+            questionCard.className = 'question-card active';
+            
+            questionCard.innerHTML = `
+                <div class="question-header">
+                    <span class="question-number">Question ${currentQuestion + 1} of ${quizData.length}</span>
+                    <div style="display: flex; gap: 10px;">
+                        <span class="category ${q.category}">${q.category.toUpperCase()}</span>
+                        <span class="difficulty ${q.difficulty}">${q.difficulty.toUpperCase()}</span>
+                    </div>
+                </div>
+                
+                <div class="question-title">${q.question}</div>
+                
+                ${q.scenario ? `
+                    <div class="scenario-box">
+                        <h4>📋 Scenario:</h4>
+                        <p>${q.scenario}</p>
+                    </div>
+                ` : ''}
+                
+                ${q.code ? `<div class="code-block">${escapeHtml(q.code)}</div>` : ''}
+                
+                <div class="options">
+                    ${q.options.map((option, index) => `
+                        <div class="option" data-index="${index}">
+                            <span class="option-letter">${String.fromCharCode(65 + index)}</span>
+                            <span class="option-content">${option}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="explanation" id="explanation">
+                    <div class="explanation-title">💡 Explanation:</div>
+                    <div>${q.explanation}</div>
+                </div>
+                
+                <div class="buttons">
+                    <button class="btn btn-check" id="checkBtn" disabled>Check Answer</button>
+                    <button class="btn btn-next" id="nextBtn">Next Question →</button>
+                </div>
+            `;
+            
+            container.innerHTML = '';
+            container.appendChild(questionCard);
+            
+            document.querySelectorAll('.option').forEach(option => {
+                option.addEventListener('click', selectOption);
+            });
+            
+            document.getElementById('checkBtn').addEventListener('click', checkAnswer);
+            document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+            
+            updateProgress();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function selectOption(e) {
+            const option = e.currentTarget;
+            const index = parseInt(option.dataset.index);
+            
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            option.classList.add('selected');
+            selectedAnswer = index;
+            document.getElementById('checkBtn').disabled = false;
+        }
+
+        function checkAnswer() {
+            if (selectedAnswer === null) return;
+            
+            const q = quizData[currentQuestion];
+            const isCorrect = selectedAnswer === q.correct;
+            
+            categoryScores[q.category].total++;
+            
+            if (isCorrect) {
+                correctAnswers++;
+                streak++;
+                maxStreak = Math.max(maxStreak, streak);
+                categoryScores[q.category].correct++;
+            } else {
+                wrongAnswers++;
+                streak = 0;
+            }
+            
+            document.querySelectorAll('.option').forEach((option, index) => {
+                option.style.pointerEvents = 'none';
+                if (index === q.correct) {
+                    option.classList.add('correct');
+                } else if (index === selectedAnswer && !isCorrect) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            document.getElementById('explanation').classList.add('show');
+            document.getElementById('checkBtn').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'block';
+            
+            updateStats();
+        }
+
+        function nextQuestion() {
+            selectedAnswer = null;
+            currentQuestion++;
+            
+            if (currentQuestion < quizData.length) {
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function updateProgress() {
+            const progress = document.getElementById('progress');
+            const percentage = (currentQuestion / quizData.length) * 100;
+            progress.style.width = percentage + '%';
+            progress.textContent = `${currentQuestion}/${quizData.length}`;
+        }
+
+        function updateStats() {
+            document.getElementById('correctCount').textContent = correctAnswers;
+            document.getElementById('wrongCount').textContent = wrongAnswers;
+            
+            const total = correctAnswers + wrongAnswers;
+            const accuracy = total > 0 ? Math.round((correctAnswers / total) * 100) : 0;
+            document.getElementById('accuracyCount').textContent = accuracy + '%';
+            document.getElementById('streakCount').textContent = streak;
+        }
+
+        function showResults() {
+            const endTime = new Date();
+            const totalTime = Math.floor((endTime - startTime) / 1000);
+            const minutes = Math.floor(totalTime / 60);
+            const seconds = totalTime % 60;
+            
+            const percentage = Math.round((correctAnswers / quizData.length) * 100);
+            let grade, gradeClass, message;
+            
+            if (percentage >= 90) {
+                grade = 'A+ MASTER!';
+                gradeClass = 'excellent';
+                message = '🏆 Outstanding! You\'re ready to build production web applications!';
+            } else if (percentage >= 80) {
+                grade = 'A EXCELLENT';
+                gradeClass = 'excellent';
+                message = '🌟 Excellent work! You have a strong grasp of HTTP fundamentals!';
+            } else if (percentage >= 70) {
+                grade = 'B GOOD';
+                gradeClass = 'good';
+                message = '👍 Good job! Review the areas you struggled with and try again!';
+            } else if (percentage >= 60) {
+                grade = 'C FAIR';
+                gradeClass = 'fair';
+                message = '📚 Fair performance. Study the chapters again and retake the quiz.';
+            } else {
+                grade = 'D NEEDS WORK';
+                gradeClass = 'poor';
+                message = '💪 Keep studying! Review Let\'s Go Ch 2 and Go Web Programming Ch 3.';
+            }
+
+            // Get leaderboard
+            let leaderboard = JSON.parse(localStorage.getItem('httpQuizLeaderboard') || '[]');
+            leaderboard.push({
+                name: playerName,
+                score: correctAnswers,
+                percentage: percentage,
+                time: totalTime,
+                date: new Date().toISOString()
+            });
+            leaderboard.sort((a, b) => b.percentage - a.percentage || a.time - b.time);
+            leaderboard = leaderboard.slice(0, 10);
+            localStorage.setItem('httpQuizLeaderboard', JSON.stringify(leaderboard));
+
+            const shareText = `🚀 Go Web Dev Quiz Results
+👤 ${playerName}
+✅ Score: ${correctAnswers}/${quizData.length} (${percentage}%)
+⏱️ Time: ${minutes}:${String(seconds).padStart(2, '0')}
+🔥 Best Streak: ${maxStreak}
+🎯 Grade: ${grade}`;
+
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('progressSection').style.display = 'none';
+            
+            const results = document.getElementById('results');
+            results.innerHTML = `
+                <h1>🎉 Challenge Complete!</h1>
+                <p style="font-size: 1.2em; color: #666; margin: 10px 0;">${playerName}</p>
+                
+                <div class="score-display">
+                    <div class="score-circle">
+                        <div class="score-number">${percentage}%</div>
+                        <div class="score-label">Accuracy</div>
+                    </div>
+                    <div class="score-circle">
+                        <div class="score-number">${correctAnswers}</div>
+                        <div class="score-label">Correct</div>
+                    </div>
+                </div>
+                
+                <div class="grade-box">
+                    <div class="grade ${gradeClass}">${grade}</div>
+                    <p style="font-size: 1.2em; color: #666;">${message}</p>
+                </div>
+                
+                <div class="performance-grid">
+                    <div class="perf-stat">
+                        <div class="perf-value">${correctAnswers}/${quizData.length}</div>
+                        <div class="perf-label">Questions Correct</div>
+                    </div>
+                    <div class="perf-stat">
+                        <div class="perf-value">${minutes}:${String(seconds).padStart(2, '0')}</div>
+                        <div class="perf-label">Time Taken</div>
+                    </div>
+                    <div class="perf-stat">
+                        <div class="perf-value">${maxStreak}</div>
+                        <div class="perf-label">Best Streak</div>
+                    </div>
+                    <div class="perf-stat">
+                        <div class="perf-value">${Math.round(categoryScores.scenario.correct/categoryScores.scenario.total*100) || 0}%</div>
+                        <div class="perf-label">Scenarios</div>
+                    </div>
+                    <div class="perf-stat">
+                        <div class="perf-value">${Math.round(categoryScores.practice.correct/categoryScores.practice.total*100) || 0}%</div>
+                        <div class="perf-label">Practice</div>
+                    </div>
+                    <div class="perf-stat">
+                        <div class="perf-value">${Math.round(categoryScores.debugging.correct/categoryScores.debugging.total*100) || 0}%</div>
+                        <div class="perf-label">Debugging</div>
+                    </div>
+                    <div class="perf-stat">
+                        <div class="perf-value">${Math.round(categoryScores.theory.correct/categoryScores.theory.total*100) || 0}%</div>
+                        <div class="perf-label">Theory</div>
+                    </div>
+                </div>
+                
+                <div class="leaderboard">
+                    <h3>🏆 Top 10 Leaderboard</h3>
+                    ${leaderboard.map((entry, index) => `
+                        <div class="leaderboard-entry ${entry.name === playerName && entry.percentage === percentage ? 'style="background: #e7f3ff; border: 2px solid #667eea;"' : ''}">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <span class="rank">#${index + 1}</span>
+                                <div>
+                                    <strong>${entry.name}</strong>
+                                    <div style="font-size: 0.9em; color: #666;">${new Date(entry.date).toLocaleDateString()}</div>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-weight: bold; color: #667eea;">${entry.percentage}%</div>
+                                <div style="font-size: 0.9em; color: #666;">${Math.floor(entry.time/60)}:${String(entry.time%60).padStart(2,'0')}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="recommendations">
+                    <h3>📚 Next Steps</h3>
+                    <ul>
+                        ${percentage >= 80 ? `
+                            <li>✅ <strong>Move forward!</strong> You're ready for Quiz 3: Functions & Handlers</li>
+                            <li>🚀 Start building your web application</li>
+                            <li>📖 Begin studying templates and databases</li>
+                        ` : percentage >= 70 ? `
+                            <li>📚 Review the explanations for questions you missed</li>
+                            <li>💻 Practice building more handlers</li>
+                            <li>🔄 Retake the quiz tomorrow to improve</li>
+                        ` : `
+                            <li>📖 Re-read Let's Go Chapter 2</li>
+                            <li>📖 Study Go Web Programming Chapter 3</li>
+                            <li>💻 Build 5-10 simple HTTP servers</li>
+                            <li>🔄 Retake this quiz in 3-5 days</li>
+                        `}
+                        ${categoryScores.scenario.correct/categoryScores.scenario.total < 0.7 ? `<li>⚠️ Focus on: Real-world scenarios</li>` : ''}
+                        ${categoryScores.debugging.correct/categoryScores.debugging.total < 0.7 ? `<li>⚠️ Focus on: Debugging common mistakes</li>` : ''}
+                        ${categoryScores.practice.correct/categoryScores.practice.total < 0.7 ? `<li>⚠️ Focus on: Practical coding exercises</li>` : ''}
+                        ${categoryScores.theory.correct/categoryScores.theory.total < 0.7 ? `<li>⚠️ Focus on: HTTP theory and concepts</li>` : ''}
+                    </ul>
+                </div>
+                
+                <div class="share-section">
+                    <h3>📤 Share Your Results!</h3>
+                    <p>Copy and share with your study group:</p>
+                    <div class="share-text">${shareText}</div>
+                    <button class="btn-action" onclick="copyToClipboard()">📋 Copy Results</button>
+                </div>
+                
+                <div class="btn-actions">
+                    <button class="btn-action" onclick="location.reload()">🔄 Retake Quiz</button>
+                    <button class="btn-action" onclick="reviewMistakes()">📝 Review Mistakes</button>
+                </div>
+            `;
+            
+            results.classList.add('show');
+            
+            window.shareText = shareText;
+        }
+
+        function copyToClipboard() {
+            navigator.clipboard.writeText(window.shareText).then(() => {
+                alert('✅ Results copied to clipboard!');
+            });
+        }
+
+        function reviewMistakes() {
+            alert('💡 Tip: Scroll up and review the explanations for the questions you got wrong. Each explanation shows why the correct answer is right and what mistakes to avoid!');
+        }
+    </script>
+</body>
+</html>

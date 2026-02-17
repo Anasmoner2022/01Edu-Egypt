@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go Web Dev: Functions & Handlers - Practical Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #f5576c;
+            font-size: 2.8em;
+            margin-bottom: 15px;
+        }
+
+        .header .subtitle {
+            color: #666;
+            font-size: 1.2em;
+            line-height: 1.8;
+        }
+
+        .challenge-badge {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            display: inline-block;
+            margin: 15px 0;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .name-entry {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .name-entry h2 {
+            color: #f5576c;
+            margin-bottom: 20px;
+        }
+
+        .name-input {
+            padding: 15px;
+            border: 2px solid #f5576c;
+            border-radius: 10px;
+            font-size: 1.1em;
+            width: 300px;
+            margin-right: 10px;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(245, 87, 108, 0.4);
+        }
+
+        .progress-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #f093fb, #f5576c);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #f5576c;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .question-card {
+            background: white;
+            padding: 35px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        .question-card.active {
+            display: block;
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #f0f0f0;
+        }
+
+        .question-number {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .category {
+            background: #e7f3ff;
+            color: #1976D2;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+
+        .category.practice { background: #fff3cd; color: #856404; }
+        .category.debugging { background: #f8d7da; color: #721c24; }
+        .category.theory { background: #d4edda; color: #155724; }
+        .category.scenario { background: #e7f3ff; color: #1976D2; }
+
+        .difficulty {
+            padding: 6px 18px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .difficulty.easy { background: #d4edda; color: #155724; }
+        .difficulty.medium { background: #fff3cd; color: #856404; }
+        .difficulty.hard { background: #f8d7da; color: #721c24; }
+
+        .question-title {
+            font-size: 1.6em;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .scenario-box {
+            background: #f8f9fa;
+            border-left: 5px solid #f5576c;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .scenario-box h4 {
+            color: #f5576c;
+            margin-bottom: 10px;
+        }
+
+        .code-block {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            overflow-x: auto;
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .option {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            display: flex;
+            align-items: start;
+            gap: 15px;
+        }
+
+        .option:hover {
+            background: #e9ecef;
+            transform: translateX(8px);
+        }
+
+        .option.selected {
+            background: #ffe7f0;
+            border-color: #f5576c;
+        }
+
+        .option.correct {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .option.incorrect {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+
+        .option-letter {
+            background: #f5576c;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            flex-shrink: 0;
+        }
+
+        .option.correct .option-letter {
+            background: #28a745;
+        }
+
+        .option.incorrect .option-letter {
+            background: #dc3545;
+        }
+
+        .option-content {
+            flex: 1;
+        }
+
+        .explanation {
+            background: #ffe7f0;
+            border-left: 5px solid #f5576c;
+            padding: 25px;
+            margin-top: 25px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .explanation.show {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .explanation-title {
+            font-weight: bold;
+            color: #c92a50;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 18px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-check {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+        }
+
+        .btn-check:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn-check:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-next {
+            background: #28a745;
+            color: white;
+            display: none;
+        }
+
+        .btn-next:hover {
+            background: #218838;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .results {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        .results h1 {
+            color: #f5576c;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .score-display {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 40px 0;
+        }
+
+        .score-circle {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 15px 40px rgba(245, 87, 108, 0.5);
+        }
+
+        .score-number {
+            color: white;
+            font-size: 4em;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .score-label {
+            color: white;
+            font-size: 1.2em;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+
+        .grade-box {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+
+        .grade {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .grade.excellent { color: #28a745; }
+        .grade.good { color: #17a2b8; }
+        .grade.fair { color: #ffc107; }
+        .grade.poor { color: #dc3545; }
+
+        .performance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .perf-stat {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .perf-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #f5576c;
+        }
+
+        .perf-label {
+            color: #666;
+            margin-top: 10px;
+            font-size: 1.1em;
+        }
+
+        .leaderboard {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .leaderboard h3 {
+            color: #f5576c;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .leaderboard-entry {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rank {
+            font-weight: bold;
+            color: #f5576c;
+            font-size: 1.2em;
+            width: 40px;
+        }
+
+        .btn-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            padding: 18px 40px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(245, 87, 108, 0.4);
+        }
+
+        .recommendations {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .recommendations h3 {
+            color: #f5576c;
+            margin-bottom: 20px;
+        }
+
+        .recommendations ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .recommendations li {
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .recommendations li:last-child {
+            border-bottom: none;
+        }
+
+        .share-section {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+
+        .share-section h3 {
+            margin-bottom: 15px;
+        }
+
+        .share-text {
+            background: white;
+            color: #333;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.95em;
+            margin: 15px 0;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2em; }
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .score-display { flex-direction: column; align-items: center; }
+            .name-input { width: 100%; margin-bottom: 15px; }
+            .buttons { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Go Web Development</h1>
+            <div class="subtitle">
+                <strong>Functions & Handlers - Practical Challenge</strong><br>
+                Master Learning Go Ch 5 & Let's Go Ch 2 (Advanced)
+            </div>
+            <div class="challenge-badge">40 Expert-Level Questions</div>
+        </div>
+
+        <div class="name-entry" id="nameEntry">
+            <h2>👋 Ready for the Challenge?</h2>
+            <p style="color: #666; margin-bottom: 20px;">Enter your name to begin</p>
+            <div>
+                <input type="text" id="playerName" class="name-input" placeholder="Your Name" />
+                <button class="btn-start" onclick="startQuiz()">Start Challenge 🚀</button>
+            </div>
+        </div>
+
+        <div class="progress-section" id="progressSection" style="display: none;">
+            <div class="progress-info">
+                <div><strong id="playerDisplay"></strong></div>
+                <div id="timeDisplay" style="font-weight: bold; color: #f5576c;"></div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress">0/40</div>
+            </div>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="correctCount">0</div>
+                    <div class="stat-label">Correct</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="wrongCount">0</div>
+                    <div class="stat-label">Wrong</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="accuracyCount">0%</div>
+                    <div class="stat-label">Accuracy</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="streakCount">0</div>
+                    <div class="stat-label">Streak</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="quiz-container"></div>
+        
+        <div class="results" id="results"></div>
+    </div>
+
+    <script>
+        const quizData = [
+            // FUNCTIONS BASICS
+            {
+                category: "theory",
+                difficulty: "easy",
+                question: "Function Return Values",
+                code: `func divide(a, b int) (int, error) {
+    if b == 0 {
+        return 0, errors.New("division by zero")
+    }
+    return a / b, nil
+}`,
+                options: [
+                    "Functions can only return one value in Go",
+                    "Functions can return multiple values in Go",
+                    "This syntax is invalid",
+                    "Error must be the first return value"
+                ],
+                correct: 1,
+                explanation: "Go supports multiple return values! This is commonly used to return a result and an error. Convention is to put the error as the last return value."
+            },
+            {
+                category: "practice",
+                difficulty: "medium",
+                question: "Named Return Values",
+                code: `func calculate(x, y int) (sum, product int) {
+    sum = x + y
+    product = x * y
+    return
+}`,
+                options: [
+                    "This code won't compile",
+                    "Named returns are initialized to zero values and can use naked return",
+                    "Must explicitly return sum and product",
+                    "Named returns are not allowed in Go"
+                ],
+                correct: 1,
+                explanation: "Named return values are pre-declared variables. They're initialized to zero values and can use 'naked return' (just 'return' without specifying values). However, naked returns can reduce readability in long functions."
+            },
+            {
+                category: "debugging",
+                difficulty: "easy",
+                question: "Missing Return Statement",
+                code: `func isEven(n int) bool {
+    if n % 2 == 0 {
+        return true
+    }
+    // BUG: What's missing?
+}`,
+                options: [
+                    "Nothing, code is correct",
+                    "Missing 'return false' for odd numbers",
+                    "Should use 'else' keyword",
+                    "Need to declare a variable first"
+                ],
+                correct: 1,
+                explanation: "BUG: Not all code paths return a value! If n is odd, the function doesn't return anything. Add 'return false' at the end. Go requires all paths to return a value."
+            },
+
+            // HANDLER PATTERNS
+            {
+                category: "scenario",
+                difficulty: "medium",
+                question: "Handler as Method",
+                scenario: "You want to organize handlers using a struct to share dependencies.",
+                code: `type App struct {
+    logger *log.Logger
+}
+
+// How do you create a handler method?`,
+                options: [
+                    "func (app App) home(w http.ResponseWriter, r *http.Request) {...}",
+                    "func (app *App) home(w http.ResponseWriter, r *http.Request) {...}",
+                    "func home(app *App, w http.ResponseWriter, r *http.Request) {...}",
+                    "Both A and B work"
+                ],
+                correct: 1,
+                explanation: "Use a pointer receiver: func (app *App) home(...). This is the standard pattern in Let's Go. Pointer receivers avoid copying the struct and allow you to modify app's fields if needed."
+            },
+            {
+                category: "practice",
+                difficulty: "hard",
+                question: "Closure Handlers",
+                code: `func makeHandler(db *sql.DB) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        // db is accessible here
+        rows, _ := db.Query("SELECT * FROM users")
+        // ...
+    }
+}`,
+                options: [
+                    "This won't work - db is out of scope",
+                    "This is a closure - inner function captures db variable",
+                    "Need to pass db as parameter to inner function",
+                    "Closures aren't allowed in Go"
+                ],
+                correct: 1,
+                explanation: "This is a CLOSURE! The inner function 'closes over' the db variable, capturing it from the outer scope. This is a powerful pattern for dependency injection in handlers."
+            },
+            {
+                category: "theory",
+                difficulty: "medium",
+                question: "http.HandlerFunc Type",
+                code: `type HandlerFunc func(ResponseWriter, *Request)
+
+func (f HandlerFunc) ServeHTTP(w ResponseWriter, r *Request) {
+    f(w, r)
+}`,
+                options: [
+                    "HandlerFunc is just an alias for functions",
+                    "HandlerFunc is a type that implements http.Handler interface",
+                    "This code is invalid",
+                    "ServeHTTP method is unnecessary"
+                ],
+                correct: 1,
+                explanation: "http.HandlerFunc is a function type that implements the http.Handler interface via its ServeHTTP method. This allows regular functions to be used as handlers!"
+            },
+
+            // METHOD RECEIVERS
+            {
+                category: "theory",
+                difficulty: "medium",
+                question: "Pointer vs Value Receivers",
+                code: `type Counter struct {
+    count int
+}
+
+func (c Counter) increment() {
+    c.count++  // Will this modify the original?
+}`,
+                options: [
+                    "Yes, modifies the original counter",
+                    "No, modifies a copy - use pointer receiver to modify",
+                    "Causes a compile error",
+                    "Depends on how it's called"
+                ],
+                correct: 1,
+                explanation: "Value receivers work on a COPY of the struct. Changes don't affect the original. Use a pointer receiver func (c *Counter) increment() to modify the actual struct."
+            },
+            {
+                category: "debugging",
+                difficulty: "hard",
+                question: "Handler Not Modifying App State",
+                code: `type App struct {
+    requestCount int
+}
+
+func (app App) track(w http.ResponseWriter, r *http.Request) {
+    app.requestCount++  // BUG: Not incrementing!
+    fmt.Fprintf(w, "Requests: %d", app.requestCount)
+}`,
+                options: [
+                    "Code is correct",
+                    "Need pointer receiver: (app *App)",
+                    "requestCount should be a pointer",
+                    "Can't modify struct fields in methods"
+                ],
+                correct: 1,
+                explanation: "BUG: Value receiver creates a copy! Changes to app.requestCount affect the copy, not the original. Fix: func (app *App) track(...) with pointer receiver."
+            },
+            {
+                category: "practice",
+                difficulty: "medium",
+                question: "When to Use Pointer Receivers?",
+                options: [
+                    "Only when methods need to modify the struct",
+                    "When methods modify the struct OR the struct is large",
+                    "Always use pointer receivers",
+                    "Never use pointer receivers"
+                ],
+                correct: 1,
+                explanation: "Use pointer receivers when: 1) Method needs to modify the struct, 2) Struct is large (avoid copying), 3) For consistency if some methods need pointers. Value receivers are fine for small, read-only structs."
+            },
+
+            // MIDDLEWARE BASICS
+            {
+                category: "scenario",
+                difficulty: "hard",
+                question: "Simple Logging Middleware",
+                scenario: "Create middleware that logs every request before passing to the handler.",
+                code: `func logRequest(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        log.Printf("%s %s", r.Method, r.URL.Path)
+        // What goes here?
+    })
+}`,
+                options: [
+                    "return next",
+                    "next.ServeHTTP(w, r)",
+                    "next(w, r)",
+                    "Nothing - logging is done"
+                ],
+                correct: 1,
+                explanation: "Call next.ServeHTTP(w, r) to pass control to the next handler. This is the middleware pattern: do something (log), then call next handler."
+            },
+            {
+                category: "practice",
+                difficulty: "hard",
+                question: "Middleware Chaining",
+                code: `func main() {
+    mux := http.NewServeMux()
+    mux.HandleFunc("/", homeHandler)
+    
+    // Apply logging and authentication middleware
+    server := logRequest(requireAuth(mux))
+    http.ListenAndServe(":8080", server)
+}`,
+                options: [
+                    "Middleware runs in order: logRequest then requireAuth",
+                    "Middleware runs in reverse: requireAuth then logRequest",
+                    "This syntax is invalid",
+                    "Only one middleware can be applied"
+                ],
+                correct: 1,
+                explanation: "Middleware wraps from inside out. requireAuth wraps mux, then logRequest wraps requireAuth. Execution order: logRequest → requireAuth → mux. Think of it like nested function calls."
+            },
+            {
+                category: "theory",
+                difficulty: "medium",
+                question: "Middleware Signature",
+                options: [
+                    "func(http.Handler) http.Handler",
+                    "func(http.ResponseWriter, *http.Request)",
+                    "func(http.Handler) http.HandlerFunc",
+                    "Both A and C are valid"
+                ],
+                correct: 3,
+                explanation: "Standard middleware signature is func(http.Handler) http.Handler. Since http.HandlerFunc implements http.Handler, returning either is valid. The key is: takes a handler, returns a handler."
+            },
+
+            // VARIADIC FUNCTIONS
+            {
+                category: "practice",
+                difficulty: "medium",
+                question: "Variadic Parameters",
+                code: `func sum(nums ...int) int {
+    total := 0
+    for _, n := range nums {
+        total += n
+    }
+    return total
+}
+
+// Usage: sum(1, 2, 3, 4, 5)`,
+                options: [
+                    "nums is an array of ints",
+                    "nums is a slice of ints",
+                    "Can only pass exactly 3 ints",
+                    "This syntax is invalid"
+                ],
+                correct: 1,
+                explanation: "Variadic parameters (...int) create a SLICE. You can pass zero or more values. Inside the function, nums is a regular []int slice."
+            },
+            {
+                category: "debugging",
+                difficulty: "easy",
+                question: "Calling Variadic Functions",
+                code: `func print(msgs ...string) {
+    for _, msg := range msgs {
+        fmt.Println(msg)
+    }
+}
+
+messages := []string{"Hello", "World"}
+print(messages)  // BUG!`,
+                options: [
+                    "Code is correct",
+                    "Need to use spread operator: print(messages...)",
+                    "Can't pass slices to variadic functions",
+                    "Need to convert to array first"
+                ],
+                correct: 1,
+                explanation: "BUG: To pass a slice to a variadic function, use the spread operator: print(messages...). Without it, you're passing a slice as a single argument instead of spreading the elements."
+            },
+
+            // DEFER
+            {
+                category: "practice",
+                difficulty: "medium",
+                question: "Defer Execution Order",
+                code: `func example() {
+    defer fmt.Println("1")
+    defer fmt.Println("2")
+    defer fmt.Println("3")
+    fmt.Println("4")
+}
+
+// What's the output?`,
+                options: [
+                    "1 2 3 4",
+                    "4 3 2 1",
+                    "4 1 2 3",
+                    "3 2 1 4"
+                ],
+                correct: 1,
+                explanation: "Defer statements execute in LIFO (Last In, First Out) order after the function returns. Output: 4 (normal), then 3, 2, 1 (deferred in reverse)."
+            },
+            {
+                category: "scenario",
+                difficulty: "hard",
+                question: "Defer in Handler",
+                scenario: "Properly close request body in a handler.",
+                code: `func handler(w http.ResponseWriter, r *http.Request) {
+    body, err := io.ReadAll(r.Body)
+    if err != nil {
+        http.Error(w, "Error", 500)
+        return
+    }
+    // Where should defer r.Body.Close() go?
+}`,
+                options: [
+                    "After io.ReadAll()",
+                    "At the end of the function",
+                    "Right after function signature, before reading",
+                    "Not needed - handled automatically"
+                ],
+                correct: 2,
+                explanation: "Put defer r.Body.Close() at the start, right after the function begins. This ensures the body is closed even if there's an error. Defer runs regardless of how the function exits."
+            },
+            {
+                category: "debugging",
+                difficulty: "medium",
+                question: "Defer with Closures",
+                code: `func process() {
+    for i := 0; i < 3; i++ {
+        defer fmt.Println(i)
+    }
+}
+
+// Output?`,
+                options: [
+                    "0 1 2",
+                    "2 1 0",
+                    "0 0 0",
+                    "Compilation error"
+                ],
+                correct: 1,
+                explanation: "Each defer captures the CURRENT value of i at the time defer is called. Three defers are stacked with values 0, 1, 2. They execute in reverse: 2, 1, 0."
+            },
+
+            // ANONYMOUS FUNCTIONS
+            {
+                category: "practice",
+                difficulty: "medium",
+                question: "Inline Anonymous Function",
+                code: `func main() {
+    greet := func(name string) string {
+        return "Hello, " + name
+    }
+    
+    fmt.Println(greet("Alice"))
+}`,
+                options: [
+                    "This syntax is invalid",
+                    "Anonymous functions are assigned to variables and can be called",
+                    "Must use 'function' keyword",
+                    "Can't return values from anonymous functions"
+                ],
+                correct: 1,
+                explanation: "Go supports anonymous functions (function literals). They can be assigned to variables and called just like regular functions. Useful for closures and one-off handlers."
+            },
+            {
+                category: "scenario",
+                difficulty: "hard",
+                question: "Immediately Invoked Function",
+                code: `func main() {
+    result := func(x, y int) int {
+        return x + y
+    }(5, 3)
+    
+    fmt.Println(result)  // Output?
+}`,
+                options: [
+                    "Compilation error",
+                    "8",
+                    "Function object",
+                    "nil"
+                ],
+                correct: 1,
+                explanation: "This is an immediately invoked function expression (IIFE). The function is defined and called immediately with (5, 3). Result = 8. Useful for creating scope or one-time initialization."
+            },
+
+            // CLOSURES
+            {
+                category: "theory",
+                difficulty: "hard",
+                question: "Closure Behavior",
+                code: `func makeCounter() func() int {
+    count := 0
+    return func() int {
+        count++
+        return count
+    }
+}
+
+counter := makeCounter()
+fmt.Println(counter())  // 1
+fmt.Println(counter())  // ?`,
+                options: [
+                    "1 (resets each time)",
+                    "2 (count persists across calls)",
+                    "Compilation error",
+                    "undefined"
+                ],
+                correct: 1,
+                explanation: "The returned function is a CLOSURE that captures 'count'. The variable persists between calls. Output: 1, then 2. Each call increments the same count variable."
+            },
+            {
+                category: "scenario",
+                difficulty: "hard",
+                question: "Database Connection Closure",
+                scenario: "Create a handler factory that closes over a database connection.",
+                code: `func NewUserHandler(db *sql.DB) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        // db is accessible here via closure
+        users, _ := db.Query("SELECT * FROM users")
+        // ...
+    }
+}`,
+                options: [
+                    "db will be garbage collected before handler runs",
+                    "Closure keeps db alive and accessible",
+                    "Must pass db as parameter to inner function",
+                    "This pattern doesn't work"
+                ],
+                correct: 1,
+                explanation: "The closure captures db from the outer scope. As long as the handler exists, db won't be garbage collected. This is a clean dependency injection pattern!"
+            },
+
+            // FUNCTION TYPES
+            {
+                category: "practice",
+                difficulty: "medium",
+                question: "Custom Function Types",
+                code: `type HandlerFunc func(http.ResponseWriter, *http.Request)
+
+func (h HandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    h(w, r)
+}`,
+                options: [
+                    "This creates a new function type that can have methods",
+                    "Functions can't have methods in Go",
+                    "Must use 'interface' keyword",
+                    "This syntax is invalid"
+                ],
+                correct: 0,
+                explanation: "You can define custom function TYPES and give them methods! This is how http.HandlerFunc works - it's a function type that implements http.Handler interface."
+            },
+
+            // ERROR HANDLING IN FUNCTIONS
+            {
+                category: "practice",
+                difficulty: "medium",
+                question: "Multiple Return with Error",
+                code: `func getUser(id int) (*User, error) {
+    if id < 0 {
+        return nil, errors.New("invalid ID")
+    }
+    user := &User{ID: id}
+    return user, nil
+}`,
+                options: [
+                    "Return nil, err for errors AND value, nil for success",
+                    "Can only return one or the other",
+                    "Error should be first return value",
+                    "Must use panic for errors"
+                ],
+                correct: 0,
+                explanation: "Go convention: return (zero_value, error) on error, and (value, nil) on success. Always check the error before using the value!"
+            },
+            {
+                category: "debugging",
+                difficulty: "medium",
+                question: "Ignoring Errors",
+                code: `func handler(w http.ResponseWriter, r *http.Request) {
+    user, _ := getUser(123)  // Ignoring error!
+    fmt.Fprintf(w, "User: %s", user.Name)  // Potential crash!
+}`,
+                options: [
+                    "This is fine - blank identifier handles it",
+                    "BUG: Must check error - user could be nil",
+                    "Go will automatically handle the error",
+                    "The function won't compile"
+                ],
+                correct: 1,
+                explanation: "BUG: Never ignore errors with _! If getUser returns an error, user is nil, and user.Name will panic. Always check: if err != nil { handle error }."
+            },
+
+            // HANDLER DEPENDENCIES
+            {
+                category: "scenario",
+                difficulty: "hard",
+                question: "Sharing Dependencies",
+                scenario: "Multiple handlers need access to database, logger, and config.",
+                code: `type Application struct {
+    db     *sql.DB
+    logger *log.Logger
+    config *Config
+}
+
+// How to create handlers with these dependencies?`,
+                options: [
+                    "Use global variables",
+                    "Create methods on Application struct with pointer receiver",
+                    "Pass all deps as function parameters",
+                    "Create separate handler functions for each"
+                ],
+                correct: 1,
+                explanation: "Best practice from Let's Go: Create an Application struct with dependencies, then make handlers as methods: func (app *App) home(w, r) {...}. Clean, testable, no globals!"
+            },
+
+            // PANIC AND RECOVER
+            {
+                category: "practice",
+                difficulty: "hard",
+                question: "Recover from Panic",
+                code: `func safeHandler(w http.ResponseWriter, r *http.Request) {
+    defer func() {
+        if err := recover(); err != nil {
+            http.Error(w, "Internal Error", 500)
+        }
+    }()
+    
+    // Risky code that might panic
+    panic("something went wrong")
+}`,
+                options: [
+                    "Panic will crash the server",
+                    "Recover catches the panic and returns 500 error",
+                    "Defer won't run after panic",
+                    "Can't use recover in handlers"
+                ],
+                correct: 1,
+                explanation: "recover() in a deferred function catches panics. This prevents the server from crashing. However, it's better to handle errors explicitly rather than relying on panic/recover."
+            },
+
+            // FIRST-CLASS FUNCTIONS
+            {
+                category: "theory",
+                difficulty: "medium",
+                question: "Functions as Values",
+                code: `func apply(f func(int) int, value int) int {
+    return f(value)
+}
+
+double := func(x int) int { return x * 2 }
+result := apply(double, 5)  // result = ?`,
+                options: [
+                    "Compilation error",
+                    "10",
+                    "5",
+                    "function reference"
+                ],
+                correct: 1,
+                explanation: "Functions are first-class values in Go! You can pass them as arguments. apply calls double(5), which returns 10. This enables powerful functional programming patterns."
+            },
+
+            // METHOD VALUES
+            {
+                category: "practice",
+                difficulty: "hard",
+                question: "Method Values vs Method Expressions",
+                code: `type App struct {
+    name string
+}
+
+func (a *App) greet() string {
+    return "Hello from " + a.name
+}
+
+app := &App{name: "MyApp"}
+f := app.greet  // Method value
+
+// What is f?`,
+                options: [
+                    "A copy of the greet function",
+                    "A closure that captures app and calls app.greet",
+                    "Invalid syntax",
+                    "A method reference"
+                ],
+                correct: 1,
+                explanation: "app.greet is a METHOD VALUE - a closure that captures the receiver (app). You can call f() without arguments. Different from method expression (*App).greet which needs receiver passed."
+            },
+
+            // INIT FUNCTIONS
+            {
+                category: "theory",
+                difficulty: "medium",
+                question: "Init Function",
+                code: `var db *sql.DB
+
+func init() {
+    db, _ = sql.Open("postgres", "...")
+}
+
+func main() {
+    // db is already initialized
+}`,
+                options: [
+                    "init() runs before main()",
+                    "init() runs after main()",
+                    "Must call init() manually",
+                    "Only one init() allowed per program"
+                ],
+                correct: 0,
+                explanation: "init() runs automatically before main(). Each package can have multiple init() functions. Use for package-level initialization. However, prefer explicit initialization for better testability."
+            },
+
+            // REAL-WORLD SCENARIOS
+            {
+                category: "scenario",
+                difficulty: "hard",
+                question: "Request-Scoped Values",
+                scenario: "You want to pass user info from middleware to handlers without global variables.",
+                code: `func requireAuth(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        user := authenticate(r)
+        // How to pass user to next handler?
+        next.ServeHTTP(w, r)
+    })
+}`,
+                options: [
+                    "Use global variable",
+                    "Use request context: r = r.WithContext(context.WithValue(r.Context(), key, user))",
+                    "Can't be done",
+                    "Store in http.ResponseWriter"
+                ],
+                correct: 1,
+                explanation: "Use request Context! Create a new request with values: ctx := context.WithValue(r.Context(), 'user', user); r = r.WithContext(ctx). Retrieve in handler with r.Context().Value('user')."
+            },
+            {
+                category: "scenario",
+                difficulty: "hard",
+                question: "Graceful Error Handler",
+                code: `type HandlerError struct {
+    Error   error
+    Message string
+    Code    int
+}
+
+func (app *App) errorHandler(h func(http.ResponseWriter, *http.Request) *HandlerError) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        if e := h(w, r); e != nil {
+            http.Error(w, e.Message, e.Code)
+            app.logger.Println(e.Error)
+        }
+    }
+}`,
+                options: [
+                    "This pattern doesn't work",
+                    "This wraps handlers to centralize error handling",
+                    "Too complex - use simpler approach",
+                    "Can't return custom types from handlers"
+                ],
+                correct: 1,
+                explanation: "This is an advanced pattern! Instead of http.HandlerFunc, your handlers return *HandlerError. The wrapper converts them to standard handlers and centralizes error logging. Clean and DRY!"
+            },
+
+            // FUNCTION PARAMETERS
+            {
+                category: "debugging",
+                difficulty: "easy",
+                question: "Pass by Value",
+                code: `func modify(s string) {
+    s = "changed"
+}
+
+func main() {
+    text := "original"
+    modify(text)
+    fmt.Println(text)  // Output?
+}`,
+                options: [
+                    "changed",
+                    "original",
+                    "empty string",
+                    "compilation error"
+                ],
+                correct: 1,
+                explanation: "Go is PASS BY VALUE. The function gets a copy of text. Changes to s don't affect the original. Output: 'original'. To modify, pass a pointer or return the new value."
+            },
+            {
+                category: "practice",
+                difficulty: "medium",
+                question: "Slice Behavior in Functions",
+                code: `func addItem(items []string, item string) []string {
+    return append(items, item)
+}
+
+list := []string{"a", "b"}
+addItem(list, "c")
+fmt.Println(len(list))  // Output?`,
+                options: [
+                    "3",
+                    "2",
+                    "Error - slice is immutable",
+                    "Depends on capacity"
+                ],
+                correct: 1,
+                explanation: "Slices are passed by value, but they reference the same underlying array. append() might create a NEW slice if capacity is exceeded. Without assignment (list = addItem(...)), original list is unchanged. Length is still 2."
+            },
+
+            // HANDLER COMPOSITION
+            {
+                category: "scenario",
+                difficulty: "hard",
+                question: "Composable Middleware",
+                code: `func chain(middlewares ...func(http.Handler) http.Handler) func(http.Handler) http.Handler {
+    return func(final http.Handler) http.Handler {
+        for i := len(middlewares) - 1; i >= 0; i-- {
+            final = middlewares[i](final)
+        }
+        return final
+    }
+}
+
+// Usage: chain(logging, auth, rateLimit)(handler)`,
+                options: [
+                    "This creates a middleware chain in reverse order",
+                    "Invalid - can't use variadic with function types",
+                    "Order doesn't matter for middleware",
+                    "Too complex - use simpler pattern"
+                ],
+                correct: 0,
+                explanation: "This is a middleware CHAIN helper! It takes variadic middleware functions and composes them. Applied in reverse so they execute in the order passed: logging → auth → rateLimit → handler."
+            },
+
+            // HTTP SPECIFIC
+            {
+                category: "practice",
+                difficulty: "medium",
+                question: "Handler Registration",
+                code: `type App struct {
+    router *http.ServeMux
+}
+
+func (app *App) routes() {
+    app.router.HandleFunc("/", app.home)
+    app.router.HandleFunc("/about", app.about)
+}`,
+                options: [
+                    "Can't use methods as handlers",
+                    "This is the correct pattern from Let's Go",
+                    "Must use http.HandleFunc instead",
+                    "Need to convert methods to functions"
+                ],
+                correct: 1,
+                explanation: "This is EXACTLY the Let's Go pattern! Methods with receiver automatically satisfy http.HandlerFunc signature. Clean way to organize handlers with shared dependencies."
+            },
+
+            {
+                category: "scenario",
+                difficulty: "hard",
+                question: "Dynamic Route Handler",
+                scenario: "Create different handlers for different HTTP methods on the same route.",
+                code: `func (app *App) userHandler(w http.ResponseWriter, r *http.Request) {
+    switch r.Method {
+    case http.MethodGet:
+        app.getUser(w, r)
+    case http.MethodPost:
+        app.createUser(w, r)
+    case http.MethodDelete:
+        app.deleteUser(w, r)
+    default:
+        http.Error(w, "Method not allowed", 405)
+    }
+}`,
+                options: [
+                    "Should use separate routes instead",
+                    "This is a valid RESTful pattern for method routing",
+                    "Switch on r.Method is not allowed",
+                    "Too complicated"
+                ],
+                correct: 1,
+                explanation: "This is a common pattern before Go 1.22! One handler delegates to different functions based on HTTP method. Follows REST principles where /users handles GET, POST, DELETE on the same URL."
+            },
+
+            // TESTING FUNCTIONS
+            {
+                category: "practice",
+                difficulty: "medium",
+                question: "Testing Handler Functions",
+                code: `func TestHomeHandler(t *testing.T) {
+    req := httptest.NewRequest("GET", "/", nil)
+    rr := httptest.NewRecorder()
+    
+    homeHandler(rr, req)
+    
+    if rr.Code != 200 {
+        t.Errorf("expected 200, got %d", rr.Code)
+    }
+}`,
+                options: [
+                    "Can't test handlers without running a server",
+                    "This tests the handler directly using httptest package",
+                    "Must use real HTTP requests",
+                    "Testing handlers is not supported"
+                ],
+                correct: 1,
+                explanation: "httptest.NewRecorder() and httptest.NewRequest() let you test handlers WITHOUT running a real server! This is fast, isolated unit testing. Essential for TDD."
+            },
+
+            // ADVANCED PATTERNS
+            {
+                category: "scenario",
+                difficulty: "hard",
+                question: "Handler Factory with Options",
+                code: `type HandlerConfig struct {
+    timeout time.Duration
+    cache   bool
+}
+
+func NewHandler(cfg HandlerConfig) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        ctx, cancel := context.WithTimeout(r.Context(), cfg.timeout)
+        defer cancel()
+        // Use cfg settings...
+    }
+}`,
+                options: [
+                    "This is too complex",
+                    "Factory pattern with configuration closure",
+                    "Should use global config instead",
+                    "Can't pass config to handlers"
+                ],
+                correct: 1,
+                explanation: "This is the FACTORY pattern with closures! The outer function takes configuration and returns a configured handler. The handler closes over cfg. Clean, testable, no globals!"
+            },
+
+            {
+                category: "practice",
+                difficulty: "hard",
+                question: "Function as Interface Implementation",
+                code: `type Validator interface {
+    Validate(string) error
+}
+
+type ValidatorFunc func(string) error
+
+func (f ValidatorFunc) Validate(s string) error {
+    return f(s)
+}
+
+// Now any func(string) error can be used as Validator!`,
+                options: [
+                    "This doesn't work - can't implement interfaces with functions",
+                    "Function types can implement interfaces by having methods",
+                    "Must use struct instead",
+                    "Invalid syntax"
+                ],
+                correct: 1,
+                explanation: "Advanced pattern! Define a function type and give it methods to implement an interface. Now you can use plain functions wherever the interface is needed. Very flexible!"
+            }
+        ];
+
+        let playerName = "";
+        let currentQuestion = 0;
+        let correctAnswers = 0;
+        let wrongAnswers = 0;
+        let selectedAnswer = null;
+        let streak = 0;
+        let maxStreak = 0;
+        let startTime = null;
+        let categoryScores = {
+            scenario: { correct: 0, total: 0 },
+            practice: { correct: 0, total: 0 },
+            debugging: { correct: 0, total: 0 },
+            theory: { correct: 0, total: 0 }
+        };
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        quizData = shuffle(quizData);
+
+        function startQuiz() {
+            const nameInput = document.getElementById('playerName');
+            playerName = nameInput.value.trim();
+            
+            if (!playerName) {
+                alert('Please enter your name!');
+                return;
+            }
+
+            document.getElementById('nameEntry').style.display = 'none';
+            document.getElementById('progressSection').style.display = 'block';
+            document.getElementById('playerDisplay').textContent = `👤 ${playerName}`;
+            
+            startTime = new Date();
+            renderQuestion();
+            updateTimer();
+        }
+
+        function updateTimer() {
+            setInterval(() => {
+                if (startTime && currentQuestion < quizData.length) {
+                    const elapsed = Math.floor((new Date() - startTime) / 1000);
+                    const minutes = Math.floor(elapsed / 60);
+                    const seconds = elapsed % 60;
+                    document.getElementById('timeDisplay').textContent = 
+                        `⏱️ ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        function renderQuestion() {
+            const container = document.getElementById('quiz-container');
+            const q = quizData[currentQuestion];
+            
+            const questionCard = document.createElement('div');
+            questionCard.className = 'question-card active';
+            
+            questionCard.innerHTML = `
+                <div class="question-header">
+                    <span class="question-number">Question ${currentQuestion + 1} of ${quizData.length}</span>
+                    <div style="display: flex; gap: 10px;">
+                        <span class="category ${q.category}">${q.category.toUpperCase()}</span>
+                        <span class="difficulty ${q.difficulty}">${q.difficulty.toUpperCase()}</span>
+                    </div>
+                </div>
+                
+                <div class="question-title">${q.question}</div>
+                
+                ${q.scenario ? `
+                    <div class="scenario-box">
+                        <h4>📋 Scenario:</h4>
+                        <p>${q.scenario}</p>
+                    </div>
+                ` : ''}
+                
+                ${q.code ? `<div class="code-block">${escapeHtml(q.code)}</div>` : ''}
+                
+                <div class="options">
+                    ${q.options.map((option, index) => `
+                        <div class="option" data-index="${index}">
+                            <span class="option-letter">${String.fromCharCode(65 + index)}</span>
+                            <span class="option-content">${option}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="explanation" id="explanation">
+                    <div class="explanation-title">💡 Explanation:</div>
+                    <div>${q.explanation}</div>
+                </div>
+                
+                <div class="buttons">
+                    <button class="btn btn-check" id="checkBtn" disabled>Check Answer</button>
+                    <button class="btn btn-next" id="nextBtn">Next Question →</button>
+                </div>
+            `;
+            
+            container.innerHTML = '';
+            container.appendChild(questionCard);
+            
+            document.querySelectorAll('.option').forEach(option => {
+                option.addEventListener('click', selectOption);
+            });
+            
+            document.getElementById('checkBtn').addEventListener('click', checkAnswer);
+            document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+            
+            updateProgress();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function selectOption(e) {
+            const option = e.currentTarget;
+            const index = parseInt(option.dataset.index);
+            
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            option.classList.add('selected');
+            selectedAnswer = index;
+            document.getElementById('checkBtn').disabled = false;
+        }
+
+        function checkAnswer() {
+            if (selectedAnswer === null) return;
+            
+            const q = quizData[currentQuestion];
+            const isCorrect = selectedAnswer === q.correct;
+            
+            categoryScores[q.category].total++;
+            
+            if (isCorrect) {
+                correctAnswers++;
+                streak++;
+                maxStreak = Math.max(maxStreak, streak);
+                categoryScores[q.category].correct++;
+            } else {
+                wrongAnswers++;
+                streak = 0;
+            }
+            
+            document.querySelectorAll('.option').forEach((option, index) => {
+                option.style.pointerEvents = 'none';
+                if (index === q.correct) {
+                    option.classList.add('correct');
+                } else if (index === selectedAnswer && !isCorrect) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            document.getElementById('explanation').classList.add('show');
+            document.getElementById('checkBtn').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'block';
+            
+            updateStats();
+        }
+
+        function nextQuestion() {
+            selectedAnswer = null;
+            currentQuestion++;
+            
+            if (currentQuestion < quizData.length) {
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function updateProgress() {
+            const progress = document.getElementById('progress');
+            const percentage = (currentQuestion / quizData.length) * 100;
+            progress.style.width = percentage + '%';
+            progress.textContent = `${currentQuestion}/${quizData.length}`;
+        }
+
+        function updateStats() {
+            document.getElementById('correctCount').textContent = correctAnswers;
+            document.getElementById('wrongCount').textContent = wrongAnswers;
+            
+            const total = correctAnswers + wrongAnswers;
+            const accuracy = total > 0 ? Math.round((correctAnswers / total) * 100) : 0;
+            document.getElementById('accuracyCount').textContent = accuracy + '%';
+            document.getElementById('streakCount').textContent = streak;
+        }
+
+        function showResults() {
+            const endTime = new Date();
+            const totalTime = Math.floor((endTime - startTime) / 1000);
+            const minutes = Math.floor(totalTime / 60);
+            const seconds = totalTime % 60;
+            
+            const percentage = Math.round((correctAnswers / quizData.length) * 100);
+            let grade, gradeClass, message;
+            
+            if (percentage >= 90) {
+                grade = 'A+ MASTER!';
+                gradeClass = 'excellent';
+                message = '🏆 Outstanding! You\'ve mastered functions and handlers!';
+            } else if (percentage >= 80) {
+                grade = 'A EXCELLENT';
+                gradeClass = 'excellent';
+                message = '🌟 Excellent! You have a strong understanding of these concepts!';
+            } else if (percentage >= 70) {
+                grade = 'B GOOD';
+                gradeClass = 'good';
+                message = '👍 Good work! Review the challenging topics and practice more.';
+            } else if (percentage >= 60) {
+                grade = 'C FAIR';
+                gradeClass = 'fair';
+                message = '📚 Fair. Study Learning Go Ch 5 again and practice handlers.';
+            } else {
+                grade = 'D NEEDS WORK';
+                gradeClass = 'poor';
+                message = '💪 Keep going! These are advanced topics - review and try again!';
+            }
+
+            let leaderboard = JSON.parse(localStorage.getItem('functionsQuizLeaderboard') || '[]');
+            leaderboard.push({
+                name: playerName,
+                score: correctAnswers,
+                percentage: percentage,
+                time: totalTime,
+                date: new Date().toISOString()
+            });
+            leaderboard.sort((a, b) => b.percentage - a.percentage || a.time - b.time);
+            leaderboard = leaderboard.slice(0, 10);
+            localStorage.setItem('functionsQuizLeaderboard', JSON.stringify(leaderboard));
+
+            const shareText = `🎯 Go Functions & Handlers Quiz
+👤 ${playerName}
+✅ Score: ${correctAnswers}/${quizData.length} (${percentage}%)
+⏱️ Time: ${minutes}:${String(seconds).padStart(2, '0')}
+🔥 Best Streak: ${maxStreak}
+🎯 Grade: ${grade}`;
+
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('progressSection').style.display = 'none';
+            
+            const results = document.getElementById('results');
+            results.innerHTML = `
+                <h1>🎉 Challenge Complete!</h1>
+                <p style="font-size: 1.2em; color: #666; margin: 10px 0;">${playerName}</p>
+                
+                <div class="score-display">
+                    <div class="score-circle">
+                        <div class="score-number">${percentage}%</div>
+                        <div class="score-label">Accuracy</div>
+                    </div>
+                    <div class="score-circle">
+                        <div class="score-number">${correctAnswers}</div>
+                        <div class="score-label">Correct</div>
+                    </div>
+                </div>
+                
+                <div class="grade-box">
+                    <div class="grade ${gradeClass}">${grade}</div>
+                    <p style="font-size: 1.2em; color: #666;">${message}</p>
+                </div>
+                
+                <div class="performance-grid">
+                    <div class="perf-stat">
+                        <div class="perf-value">${correctAnswers}/${quizData.length}</div>
+                        <div class="perf-label">Questions Correct</div>
+                    </div>
+                    <div class="perf-stat">
+                        <div class="perf-value">${minutes}:${String(seconds).padStart(2, '0')}</div>
+                        <div class="perf-label">Time Taken</div>
+                    </div>
+                    <div class="perf-stat">
+                        <div class="perf-value">${maxStreak}</div>
+                        <div class="perf-label">Best Streak</div>
+                    </div>
+                    <div class="perf-stat">
+                        <div class="perf-value">${Math.round(categoryScores.scenario.correct/categoryScores.scenario.total*100) || 0}%</div>
+                        <div class="perf-label">Scenarios</div>
+                    </div>
+                    <div class="perf-stat">
+                        <div class="perf-value">${Math.round(categoryScores.practice.correct/categoryScores.practice.total*100) || 0}%</div>
+                        <div class="perf-label">Practice</div>
+                    </div>
+                    <div class="perf-stat">
+                        <div class="perf-value">${Math.round(categoryScores.debugging.correct/categoryScores.debugging.total*100) || 0}%</div>
+                        <div class="perf-label">Debugging</div>
+                    </div>
+                    <div class="perf-stat">
+                        <div class="perf-value">${Math.round(categoryScores.theory.correct/categoryScores.theory.total*100) || 0}%</div>
+                        <div class="perf-label">Theory</div>
+                    </div>
+                </div>
+                
+                <div class="leaderboard">
+                    <h3>🏆 Top 10 Leaderboard</h3>
+                    ${leaderboard.map((entry, index) => `
+                        <div class="leaderboard-entry ${entry.name === playerName && entry.percentage === percentage ? 'style="background: #ffe7f0; border: 2px solid #f5576c;"' : ''}">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <span class="rank">#${index + 1}</span>
+                                <div>
+                                    <strong>${entry.name}</strong>
+                                    <div style="font-size: 0.9em; color: #666;">${new Date(entry.date).toLocaleDateString()}</div>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-weight: bold; color: #f5576c;">${entry.percentage}%</div>
+                                <div style="font-size: 0.9em; color: #666;">${Math.floor(entry.time/60)}:${String(entry.time%60).padStart(2,'0')}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="recommendations">
+                    <h3>📚 Next Steps</h3>
+                    <ul>
+                        ${percentage >= 80 ? `
+                            <li>✅ <strong>Excellent!</strong> Move to Quiz 4: Templates & HTML</li>
+                            <li>🚀 Start building handlers with method receivers</li>
+                            <li>💻 Practice creating middleware</li>
+                        ` : percentage >= 70 ? `
+                            <li>📚 Review closures and method receivers</li>
+                            <li>💻 Practice writing handler methods</li>
+                            <li>🔄 Try the quiz again tomorrow</li>
+                        ` : `
+                            <li>📖 Re-read Learning Go Chapter 5 (Functions)</li>
+                            <li>📖 Study Let's Go Ch 2.4-2.6 (Handler patterns)</li>
+                            <li>💻 Practice writing functions with multiple returns</li>
+                            <li>🔄 Retake this quiz in 3-5 days</li>
+                        `}
+                        ${categoryScores.scenario.correct/categoryScores.scenario.total < 0.7 ? `<li>⚠️ Focus on: Real-world handler scenarios</li>` : ''}
+                        ${categoryScores.debugging.correct/categoryScores.debugging.total < 0.7 ? `<li>⚠️ Focus on: Common function bugs</li>` : ''}
+                        ${categoryScores.practice.correct/categoryScores.practice.total < 0.7 ? `<li>⚠️ Focus on: Practical coding patterns</li>` : ''}
+                        ${categoryScores.theory.correct/categoryScores.theory.total < 0.7 ? `<li>⚠️ Focus on: Function theory and closures</li>` : ''}
+                    </ul>
+                </div>
+                
+                <div class="share-section">
+                    <h3>📤 Share Your Results!</h3>
+                    <p>Copy and share with your study group:</p>
+                    <div class="share-text">${shareText}</div>
+                    <button class="btn-action" onclick="copyToClipboard()">📋 Copy Results</button>
+                </div>
+                
+                <div class="btn-actions">
+                    <button class="btn-action" onclick="location.reload()">🔄 Retake Quiz</button>
+                    <button class="btn-action" onclick="alert('Review the explanations above for deeper understanding!')">📝 Review Concepts</button>
+                </div>
+            `;
+            
+            results.classList.add('show');
+            window.shareText = shareText;
+        }
+
+        function copyToClipboard() {
+            navigator.clipboard.writeText(window.shareText).then(() => {
+                alert('✅ Results copied to clipboard!');
+            });
+        }
+    </script>
+</body>
+</html>

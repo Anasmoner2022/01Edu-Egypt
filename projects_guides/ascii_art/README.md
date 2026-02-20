@@ -1,281 +1,244 @@
 # ASCII-Art Project Guide
 
-> **Rule before you start:** If you are stuck, search first. Every resource link in this guide points to where the answer lives. Do not paste code from AI — you will not understand it under pressure, and you will not learn the skill.
+> **Before you start:** Open each of the three banner files (`standard.txt`, `shadow.txt`, `thinkertoy.txt`) and study them carefully. The entire project depends on understanding the file format before writing any code.
 
 ---
 
-## What You Are Building
+## Objectives
 
-A command-line program that takes a string and prints it in large ASCII art letters using one of three provided banner files. Each character in your input is represented by an 8-line tall ASCII drawing read from the banner file.
+By completing this project you will learn:
+
+1. **File System API** — Reading files with Go's `os` package and processing their content
+2. **Data Mapping** — Using a mathematical formula to locate data inside a structured file
+3. **String Building** — Constructing multi-line output by combining pieces row by row
+4. **Rune Handling** — Iterating over a string as Unicode code points, not bytes
+5. **Input Parsing** — Splitting on a custom delimiter (`\n` as a two-character sequence)
+6. **Edge Case Thinking** — Handling empty input, special characters, and unknown characters gracefully
 
 ---
 
-## Before You Write a Single Line
+## Prerequisites — Topics You Must Know Before Starting
 
-Download and open the three banner files: `standard.txt`, `shadow.txt`, `thinkertoy.txt`.
+### 1. Go Basics
+- Functions, return values, error handling
+- Slices — indexing and ranging
+- `for` loops and `range`
 
-Stare at `standard.txt` for a few minutes and answer these questions to yourself:
+### 2. Strings and Runes
+- The difference between a `byte` and a `rune` in Go
+- How to iterate over a string and get individual characters as runes
+- `strings.Split` — splitting on a custom separator
+- `strings.Builder` — efficient string construction in a loop
 
-- How many lines tall is each character?
-- What separates one character from the next in the file?
-- What is the ASCII code of the space character `' '`? Where does it appear in the file?
-- If you wanted the letter `'A'`, how would you calculate which line in the file it starts on?
+### 3. File Operations
+- `os.ReadFile` — read an entire file at once
+- Converting `[]byte` to `string`
 
-Do not move on until you can answer all four. The entire project depends on understanding the file format.
+### 4. ASCII
+- What the ASCII table is
+- What "printable ASCII characters" means (codes 32–126)
+- The decimal value of the space character
 
-**Resources:**
+**If any of these are unfamiliar, read about them before writing any code.**
+
 - Search: **"ASCII table printable characters"**
-- Search: **"golang read file line by line"**
-- https://pkg.go.dev/os#ReadFile
+- Search: **"golang rune vs byte"**
+- https://pkg.go.dev/os
+- https://pkg.go.dev/strings
 
 ---
 
-## Phase 1 — Project Setup
-
-### Checkpoint 1.1 — Structure
+## Project Structure
 
 ```
 ascii-art/
 ├── main.go
-├── go.mod
 ├── standard.txt
 ├── shadow.txt
-└── thinkertoy.txt
-```
-
-```bash
-go mod init ascii-art
+├── thinkertoy.txt
+└── go.mod
 ```
 
 ---
 
-### Checkpoint 1.2 — Read the Argument
+## Milestone 1 — Understand the Banner File Format
 
-Your program takes exactly one argument: the string to render.
+**This milestone has no code.** Do not skip it.
 
+Open `standard.txt` and answer every question below before writing anything.
+
+**Questions to answer:**
+- How many lines tall is each character's art?
+- What separates one character from the next in the file?
+- Which character appears first in the file? What is its ASCII value?
+- Which character appears second? What is its ASCII value?
+- How many total lines does one character occupy in the file (including the separator)?
+- If the space character `' '` starts at line index 1, where does `'!'` start? Where does `'"'` start?
+- Write the formula: given a character `c`, at what line index does its art begin?
+
+**Verify:** You should be able to state the formula clearly before moving on:
+```
+startLine = (ASCII value of c  -  32)  *  9  +  1
+```
+If you reached a different formula, re-examine the file. Count carefully.
+
+---
+
+## Milestone 2 — Load the Banner File
+
+**Goal:** Read a banner file and return its lines as a slice of strings.
+
+**Questions to answer:**
+- What does `os.ReadFile` return, and what do you need to do before splitting it into lines?
+- Should you split on `"\n"` or `"\r\n"`? What happens on different operating systems?
+- How many lines should `standard.txt` produce when split? Calculate it from the formula before running the code.
+
+**Code Placeholder:**
 ```go
-package main
-
-import (
-    "fmt"
-    "os"
-)
-
-func main() {
-    if len(os.Args) != __ {
-        fmt.Println("Usage: go run . <string>")
-        return
-    }
-
-    input := os.Args[1]
-    fmt.Println(input) // temporary
-}
-```
-
-**Verify before moving on:**
-- `go run . "Hello"` prints `Hello`
-- `go run . ""` prints an empty line (or nothing) without crashing
-
----
-
-## Phase 2 — Understanding the Banner File
-
-### Checkpoint 2.1 — Concept: The File Format
-
-Open `standard.txt` and read it carefully. Here is what you will find:
-
-- The very first line is **empty**
-- Then comes the space character `' '` — 8 lines of spaces
-- Then another empty line
-- Then the `'!'` character — 8 lines
-- Then another empty line
-- And so on through all printable ASCII characters from 32 (space) to 126 (`~`)
-
-This means every character in the banner is exactly **9 lines** in the file: 8 lines of art + 1 empty separator line.
-
-The file starts at ASCII 32 (space). So to find any character `c` in the file:
-
-```
-startLine = (ASCII value of c - 32) * 9 + 1
-```
-
-That formula gives you the line index (0-based) where the first of the 8 art lines begins.
-
-Write that formula down. You will use it in code soon.
-
----
-
-### Checkpoint 2.2 — Load the Banner File
-
-Write a function that reads the banner file and returns all its lines as a slice of strings:
-
-```go
-import (
-    "os"
-    "strings"
-)
-
 func loadBanner(filename string) ([]string, error) {
-    data, err := os.ReadFile(filename)
-    if err != nil {
-        return nil, err
-    }
-    lines := strings.Split(string(data), "\n")
-    return lines, nil
+    // Read the file into memory
+
+    // Convert to string
+
+    // Split into lines on "\n"
+    // Note: if lines contain "\r", trim it from each line
+
+    // Return the lines slice
 }
 ```
 
-**Important:** On some systems the file may use `\r\n` line endings. After splitting, you may need to clean each line. Search: **"golang strings.TrimRight carriage return"**
+**Resources:**
+- https://pkg.go.dev/os#ReadFile
+- Search: **"golang strings TrimRight carriage return"**
 
-**Verify before moving on:**
-- Call `loadBanner("standard.txt")` and print `len(lines)`
-- Count the lines manually: there are 95 printable ASCII characters (32–126), each taking 9 lines, plus a leading empty line. What number do you expect? Does it match?
+**Verify:**
+- Call `loadBanner("standard.txt")` and print the length of the result
+- Calculate the expected length manually first — does it match?
 
 ---
 
-### Checkpoint 2.3 — Extract One Character
+## Milestone 3 — Extract One Character's Art
 
-Write a function that takes the full lines slice and a character, and returns the 8 art lines for that character:
+**Goal:** Given the full lines slice and a character, return the 8 lines of art for that character.
 
+**Questions to answer:**
+- Using your formula from Milestone 1, what is the start line index for `' '`? For `'A'`? For `'~'`?
+- How many lines do you take starting from that index?
+
+**Code Placeholder:**
 ```go
 func getCharLines(lines []string, c rune) []string {
-    startLine := (int(c) - 32) * 9 + __
+    // Calculate the start line index using the formula
 
-    result := []string{}
-    for i := startLine; i < startLine+__; i++ {
-        result = append(result, lines[i])
-    }
-    return result
+    // Collect the next 8 lines starting from startLine
+
+    // Return them as a slice
 }
 ```
 
-Fill in the two blanks:
-- The first blank: what offset gets you past the separator line to the first art line?
-- The second blank: how many art lines does each character have?
-
-**Verify before moving on (add temporary code in main to test):**
-- Extract `'H'` and print its 8 lines — it should look like an H
-- Extract `' '` (space) and print its 8 lines — should be 8 lines of spaces
-- Extract `'!'` and print its 8 lines
+**Verify (add temporary code in main to test):**
+- Extract `'H'` and print its 8 lines — should look like a large H
+- Extract `' '` and print its 8 lines — should be 8 lines of spaces
+- Extract `'!'` and print its 8 lines — should look like a large exclamation mark
 
 ---
 
-## Phase 3 — Rendering a Single Line of Text
+## Milestone 4 — Render a Single Line of Text
 
-### Checkpoint 3.1 — Concept: Building the Output
-
-You cannot print character by character. Each character is 8 lines tall. So for the word `"Hi"`:
-
+**Goal:**
 ```
-line 1:  [first line of H] + [first line of i]
-line 2:  [second line of H] + [second line of i]
-...
-line 8:  [eighth line of H] + [eighth line of i]
+go run . "Hi"
 ```
+Prints H and i side by side across 8 rows.
 
-Your approach: loop through rows 0–7. For each row, loop through every character in the input string, take that row from its art lines, and concatenate them all. Then print that combined row.
+**Questions to answer:**
+- Why can you not print one character at a time from top to bottom?
+- What does the output look like if you loop over rows first, then characters?
+- On each row, what exactly do you concatenate together?
 
----
-
-### Checkpoint 3.2 — Render a String (No Newlines Yet)
-
+**Code Placeholder:**
 ```go
 func renderLine(banner []string, text string) {
-    for row := 0; row < 8; row++ {
-        line := ""
-        for _, c := range text {
-            charLines := getCharLines(banner, c)
-            line += charLines[__]
-        }
-        fmt.Println(line)
-    }
+    // Loop over rows 0 to 7:
+    //   For each row:
+    //     Loop over each character (rune) in text:
+    //       Get that character's art lines
+    //       Append the current row's line to a result string
+    //     Print the result string for this row
 }
 ```
 
-Fill in the blank: which element of `charLines` do you want on each row?
+**Resources:**
+- Search: **"golang range string rune"**
+- Search: **"golang strings Builder"** — consider using it instead of `+=`
 
-**Verify before moving on:**
-- `go run . "Hi"` should print H and i side by side across 8 rows
-- `go run . "Hello"` should match the expected output shown in the project spec
-- `go run . ""` should print nothing
+**Verify:**
+- `go run . "Hi"` renders H and i side by side
+- `go run . "Hello"` matches the spec output exactly
+- `go run . ""` prints nothing and does not crash
 
 ---
 
-## Phase 4 — Handling `\n` in the Input
+## Milestone 5 — Handle `\n` in the Input
 
-### Checkpoint 4.1 — Concept: What `\n` Means in the Argument
-
-When the user types `go run . "Hello\nThere"`, the shell passes the literal string `Hello\nThere` — two characters `\` and `n`, not a real newline.
-
-Your program must detect these `\n` sequences and treat them as line breaks in the output.
-
-The simplest approach: split the input on `"\\n"` (the two-character sequence) to get a slice of lines. Then render each line separately.
-
-```go
-parts := strings.Split(input, "\\n")
+**Goal:**
+```
+go run . "Hello\nThere"    → Hello rendered, then There below it
+go run . "Hello\n\nThere"  → Hello, a blank line, then There
+go run . "\n"              → one blank line
 ```
 
-After splitting `"Hello\nThere"` you get `["Hello", "There"]`.
-After splitting `"Hello\n\nThere"` you get `["Hello", "", "There"]`.
+**Questions to answer:**
+- When the user types `"Hello\nThere"` in the shell, what does your program actually receive — a real newline or two characters `\` and `n`?
+- What does splitting on `"\\n"` give you for the input `"Hello\nThere"`?
+- What does splitting on `"\\n"` give you for `"Hello\n\nThere"`? How many parts?
+- What should an empty part in the result render as?
 
-What should an empty string in the parts slice render as? Look at the expected output in the spec for `"Hello\n\nThere"` — there is a blank line between the two words. So an empty part prints one empty line.
-
----
-
-### Checkpoint 4.2 — Handle the Split Parts
-
+**Code Placeholder:**
 ```go
 func render(banner []string, input string) {
-    parts := strings.Split(input, "\\n")
+    // Split input on the two-character sequence "\n" (backslash + n)
+    // This is NOT the same as splitting on a real newline
 
-    for _, part := range parts {
-        if part == "" {
-            fmt.Println()
-            continue
-        }
-        renderLine(banner, part)
-    }
+    // For each part:
+    //   If the part is empty: print one blank line
+    //   Otherwise: call renderLine for that part
 }
 ```
 
-**Verify before moving on:**
-
-| Input | Expected behavior |
-|---|---|
-| `"Hello\nThere"` | Hello rendered, then There rendered below it |
-| `"Hello\n\nThere"` | Hello, blank line, There |
-| `"\n"` | One blank line printed |
-| `""` | Nothing printed |
-
-Compare your output against the spec examples character by character using `| cat -e`. The `$` at the end of each line in that output marks the end of the line — every line must end exactly there with no trailing spaces.
+**Verify using `cat -e`** (the `$` marks line endings — every line must end exactly there):
+```bash
+go run . "" | cat -e
+go run . "\n" | cat -e
+go run . "Hello\nThere" | cat -e
+go run . "Hello\n\nThere" | cat -e
+```
+Compare your output character by character against the spec examples.
 
 ---
 
-## Phase 5 — Putting It All Together
+## Milestone 6 — Final main.go
 
-### Checkpoint 5.1 — Final main.go
+**Goal:** Connect everything. Handle the argument, load the banner, render and print.
 
+**Questions to answer:**
+- How many arguments does your program expect?
+- What should happen if the banner file cannot be found?
+
+**Code Placeholder:**
 ```go
 func main() {
-    if len(os.Args) != 2 {
-        fmt.Println("Usage: go run . <string>")
-        return
-    }
+    // 1. Check that exactly 1 argument was provided
+    //    If not, print usage and return
 
-    input := os.Args[1]
+    // 2. Load the banner file (use "standard.txt" for now)
+    //    Handle the error
 
-    banner, err := loadBanner("standard.txt")
-    if err != nil {
-        fmt.Println("Error loading banner:", err)
-        return
-    }
-
-    render(banner, input)
+    // 3. Call render with the banner and the input argument
 }
 ```
 
-**Verify before moving on — run every example from the spec:**
-
+**Verify:** Run every example from the spec and confirm each matches exactly:
 ```bash
 go run . "" | cat -e
 go run . "\n" | cat -e
@@ -289,132 +252,68 @@ go run . "Hello\nThere" | cat -e
 go run . "Hello\n\nThere" | cat -e
 ```
 
-Each one must match the spec output exactly. If even one space is off, find out why before moving on.
+---
+
+## Milestone 7 — Edge Cases
+
+Test each of these and make sure your program handles them without crashing:
+
+- `go run . "!@#$%"` — special characters are valid printable ASCII
+- `go run . "123"` — numbers work automatically if your formula is correct
+- `go run . "\n\n\n"` — three blank lines
+- `go run . "Hello World"` — space character must render as 8 lines of spaces
+
+**Question for each one:** Before running it, predict the output. If reality differs from your prediction, find out why.
 
 ---
 
-## Phase 6 — Edge Cases
+## Milestone 8 — Unit Tests
 
-Before submission, think through each of these and test them:
+Write at least these:
 
-**Special characters**
-- `go run . "!@#$%"` — these are all valid printable ASCII characters. Do they render correctly?
-- `go run . "{Hello There}"` — the `{` and `}` characters are in the banner file. Verify they appear.
-
-**Numbers**
-- `go run . "123"` — numbers are printable ASCII. Do they work automatically?
-
-**Spaces**
-- `go run . "Hello World"` — the space between words must render as the space character art (8 lines of spaces). Does it?
-
-**Only newlines**
-- `go run . "\n\n\n"` — should print three blank lines
-
-**Long strings**
-- `go run . "Hello There"` — multiple words with a space between them
-
-For each one: predict the output before running it. If reality differs from your prediction, understand why.
-
----
-
-## Phase 7 — Unit Tests
-
-Write at least these tests:
-
+**Code Placeholder:**
 ```go
 // main_test.go
-package main
-
-import "testing"
-
-func TestGetCharLines(t *testing.T) {
-    banner, _ := loadBanner("standard.txt")
-
-    // Test: space character returns 8 lines
-    lines := getCharLines(banner, ' ')
-    if len(lines) != __ {
-        t.Errorf("expected 8 lines, got %d", len(lines))
-    }
-
-    // Test: 'A' starts at the correct position in the file
-    // What line index should 'A' start on? Calculate it manually first.
-    aLines := getCharLines(banner, 'A')
-    if len(aLines) != __ {
-        t.Errorf("expected 8 lines for A, got %d", len(aLines))
-    }
-}
 
 func TestLoadBanner(t *testing.T) {
     // Test that the file loads without error
-    // Test that the number of lines is what you expect
-    __________
+    // Test that len(lines) matches your expected value
+}
+
+func TestGetCharLines(t *testing.T) {
+    // Test that ' ' returns exactly 8 lines
+    // Test that 'A' returns exactly 8 lines
+    // Test that the start line index for '!' is correct (calculate it manually first)
+}
+
+func TestRenderEmpty(t *testing.T) {
+    // Test that rendering an empty string produces no output (or 8 empty lines?)
+    // Check the spec to determine the expected behavior
 }
 ```
 
-Read: https://go.dev/doc/tutorial/add-a-test
+**Resource:** https://go.dev/doc/tutorial/add-a-test
 
 ---
 
-## Phase 8 — Debugging Reference
+## Debugging Checklist
 
-**Output looks right but `cat -e` shows extra spaces at end of lines**
+Before asking for help, go through this:
 
-Cause: The banner file lines may have trailing spaces or `\r` characters.
-Fix: When loading the banner, trim each line with `strings.TrimRight(line, "\r")`.
-Search: **"golang strings TrimRight"**
-
-**Characters appear shifted or wrong**
-
-Cause: Your start line formula is off by one, or you are including the separator line in your 8 lines.
-Fix: Print the raw start line index for `' '` (should be 1), `'!'` (should be 10), `'"'` (should be 19). Each is 9 apart. If they aren't, your formula is wrong.
-
-**Empty input crashes the program**
-
-Cause: You are trying to access `os.Args[1]` without checking the length first.
-Fix: The argument count check at the top of `main` must happen before any access to `os.Args[1]`.
-
-**`\n` in input not being treated as a line break**
-
-Cause: You might be splitting on `"\n"` (a real newline) instead of `"\\n"` (the two-character sequence backslash-n).
-Fix: Use `strings.Split(input, "\\n")`. Print the result of the split to verify you're getting separate strings.
-
-**Program panics with "index out of range"**
-
-Cause: A character in the input has an ASCII value outside 32–126 (e.g. a tab, a non-ASCII unicode character).
-Fix: Before calling `getCharLines`, validate that the character is in range. Search: **"golang check if rune is printable ASCII"**
+- Does the output look visually correct but `cat -e` shows extra spaces? The banner file lines may have trailing `\r`. Trim them when loading.
+- Are characters appearing at the wrong position? Print the start line index for `' '`, `'!'`, and `'"'` — they should be 1, 10, and 19. If they are not, your formula is wrong.
+- Does the program panic with "index out of range"? A character in your input may be outside the range 32–126. Check that every rune is a valid printable ASCII character before calling `getCharLines`.
+- Is `\n` in the input not creating separate rendered lines? Make sure you split on the two-character string `"\\n"`, not on `"\n"`.
 
 ---
 
-## Key Concepts Used
+## Key Packages
 
-| Concept | Where to Learn It |
-|---|---|
-| Reading a file into a string | https://pkg.go.dev/os#ReadFile |
-| Splitting a string into lines | https://pkg.go.dev/strings#Split |
-| Iterating over a string as runes | Search: **"golang range string rune"** |
-| Converting a rune to its ASCII integer value | Search: **"golang rune to int"** |
-| String concatenation in a loop | Search: **"golang strings.Builder"** (better than `+=` in loops) |
-| Command-line arguments | https://pkg.go.dev/os#pkg-variables |
-| Writing tests | https://go.dev/doc/tutorial/add-a-test |
-
----
-
-## A Note on `strings.Builder`
-
-If your output is slow on long inputs, it is because you are using `line += charLines[row]` inside a loop. Every `+=` on a string creates a new string in memory. For short inputs this is fine. For long inputs, use `strings.Builder`:
-
-```go
-var sb strings.Builder
-for _, c := range text {
-    charLines := getCharLines(banner, c)
-    sb.WriteString(charLines[row])
-}
-fmt.Println(sb.String())
-```
-
-Read: https://pkg.go.dev/strings#Builder
-
-Understand why it is faster before deciding whether to use it.
+| Package | What You Use It For | Docs |
+|---|---|---|
+| `os` | Read the banner file, read args | https://pkg.go.dev/os |
+| `strings` | Split on `\n`, TrimRight, Builder | https://pkg.go.dev/strings |
+| `fmt` | Print rendered rows | https://pkg.go.dev/fmt |
 
 ---
 
@@ -422,14 +321,13 @@ Understand why it is faster before deciding whether to use it.
 
 - [ ] `go run . ""` outputs nothing without crashing
 - [ ] `go run . "\n"` outputs one blank line
-- [ ] `go run . "Hello"` matches the spec output exactly (verified with `cat -e`)
-- [ ] `go run . "Hello\nThere"` renders two separate lines of ASCII art
-- [ ] `go run . "Hello\n\nThere"` has a blank line between the two words
+- [ ] `go run . "Hello"` matches spec output exactly (verified with `cat -e`)
+- [ ] `go run . "Hello\nThere"` renders two blocks of ASCII art
+- [ ] `go run . "Hello\n\nThere"` has a blank line between the two blocks
 - [ ] Numbers, spaces, and special characters render correctly
 - [ ] `{`, `}` and other bracket characters render correctly
 - [ ] No trailing spaces on any output line (verified with `cat -e`)
-- [ ] No crashes on any valid printable ASCII input
-- [ ] `loadBanner` handles file not found with a proper error message
+- [ ] No crash on any valid printable ASCII input
+- [ ] Missing banner file produces a meaningful error message
 - [ ] Unit tests written and passing
 - [ ] Only standard Go packages used
-- [ ] Code follows good practices (no global variables without reason, functions are small and focused)

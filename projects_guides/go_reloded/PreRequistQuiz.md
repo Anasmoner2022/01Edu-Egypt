@@ -1,967 +1,1548 @@
-# 🎯 Go-Reloaded Prerequisites Quiz
-## strings · regexp · File I/O · strconv · Text Processing
-
-**Time Limit:** 55 minutes  
-**Total Questions:** 32  
-**Passing Score:** 26/32 (81%)
-
-> Questions are tagged: 🟢 Easy · 🟡 Medium · 🔴 Hard  
-> All topics are general — no specific project knowledge required.
+# 🔥 Go File I/O, Strings & Parsing — Medium to Hard Quiz
+## Master the Pipeline! 💪
 
 ---
 
-## 📋 SECTION 1: THE strings PACKAGE (10 Questions)
+## BLOCK 1 — File Operations (os package)
 
-### Q1 🟢 — What does `strings.ToUpper("hello")` return?
-
-**A)** `"Hello"`  
-**B)** `"HELLO"`  
-**C)** `"hello"` — strings are immutable, so nothing changes  
-**D)** An error  
-
-<details><summary>💡 Answer</summary>
-
-**B) `"HELLO"`**
-
+### Problem 1: os.Args Indexing
 ```go
-fmt.Println(strings.ToUpper("hello"))   // HELLO
-fmt.Println(strings.ToLower("WORLD"))   // world
-fmt.Println(strings.Title("hello world")) // Hello World (deprecated — use golang.org/x/text/cases)
-```
-
-String functions in Go always return a NEW string — the original is unchanged. Go strings are immutable; you can never modify them in place.
-
-</details>
-
----
-
-### Q2 🟢 — What does `strings.TrimSpace("  hello  ")` return?
-
-**A)** `"hello"` — removes all leading and trailing whitespace  
-**B)** `"  hello"` — only trims the right  
-**C)** `"hello  "` — only trims the left  
-**D)** `"hello"` with a single space on each side  
-
-<details><summary>💡 Answer</summary>
-
-**A) `"hello"` — removes all leading and trailing whitespace**
-
-```go
-strings.TrimSpace("  hello  ")   // "hello"
-strings.TrimSpace("\t\nhello\n") // "hello"
-strings.Trim("***hello***", "*") // "hello" — trims specific chars
-strings.TrimLeft("  hi", " ")   // "hi" — left only
-strings.TrimRight("hi  ", " ")  // "hi" — right only
-```
-
-`TrimSpace` is the go-to for cleaning user input and file lines. It removes spaces, tabs, newlines, and carriage returns from both ends.
-
-</details>
-
----
-
-### Q3 🟢 — What does `strings.Contains("hello world", "world")` return?
-
-**A)** The index where "world" starts  
-**B)** `true` — because "world" is a substring of "hello world"  
-**C)** The number of times "world" appears  
-**D)** `"world"`  
-
-<details><summary>💡 Answer</summary>
-
-**B) `true`**
-
-```go
-strings.Contains("hello world", "world")  // true
-strings.Contains("hello world", "earth")  // false
-strings.HasPrefix("hello", "he")          // true
-strings.HasSuffix("hello", "lo")          // true
-strings.Index("hello", "ll")              // 2 (first occurrence index)
-strings.Count("hello", "l")              // 2 (number of occurrences)
-```
-
-These are the core string search functions. Use `Contains` for "does it exist?", `Index` for "where is it?", `Count` for "how many?".
-
-</details>
-
----
-
-### Q4 🟢 — What does `strings.Split("a,b,c", ",")` return?
-
-**A)** `"a b c"`  
-**B)** `["a", "b", "c"]` — a `[]string` with 3 elements  
-**C)** `"a,b,c"` — commas are left in  
-**D)** An error  
-
-<details><summary>💡 Answer</summary>
-
-**B) `[]string{"a", "b", "c"}`**
-
-```go
-parts := strings.Split("a,b,c", ",")
-// ["a", "b", "c"]
-
-strings.Split("hello", "")
-// ["h", "e", "l", "l", "o"] — split on empty string = individual chars
-
-strings.SplitN("a,b,c,d", ",", 2)
-// ["a", "b,c,d"] — limit to 2 parts
-
-strings.Join([]string{"a", "b", "c"}, "-")
-// "a-b-c" — inverse of Split
-```
-
-`Split` and `Join` are complementary — one breaks a string into a slice, the other reassembles it.
-
-</details>
-
----
-
-### Q5 🟡 — What does `strings.Replace("aabbcc", "b", "X", 1)` return?
-
-**A)** `"aaXXcc"` — replaces all occurrences  
-**B)** `"aaXbcc"` — replaces only the first occurrence (limit = 1)  
-**C)** `"aabbcc"` — nothing changes  
-**D)** An error  
-
-<details><summary>💡 Answer</summary>
-
-**B) `"aaXbcc"` — limit of 1 means only the first**
-
-```go
-strings.Replace("aabbcc", "b", "X", 1)   // "aaXbcc" — first only
-strings.Replace("aabbcc", "b", "X", 2)   // "aaXXcc" — first two
-strings.Replace("aabbcc", "b", "X", -1)  // "aaXXcc" — all (use -1 for all)
-strings.ReplaceAll("aabbcc", "b", "X")   // "aaXXcc" — same as -1, cleaner
-```
-
-The last argument is the count: `n > 0` replaces first n occurrences, `-1` replaces all. `ReplaceAll` is `Replace` with `-1` — prefer it when you always want all replacements.
-
-</details>
-
----
-
-### Q6 🟡 — What does `strings.Fields("  hello   world  ")` return?
-
-**A)** `["hello", "world"]` — splits on whitespace and removes empty entries  
-**B)** `["", "", "hello", "", "", "world", "", ""]`  
-**C)** `["hello   world"]` — only strips the outer whitespace  
-**D)** Same as `strings.Split("  hello   world  ", " ")`  
-
-<details><summary>💡 Answer</summary>
-
-**A) `[]string{"hello", "world"}` — splits on any whitespace, skips empty**
-
-```go
-strings.Fields("  hello   world  ")
-// ["hello", "world"]
-
-// Compare with Split:
-strings.Split("  hello   world  ", " ")
-// ["", "", "hello", "", "", "world", "", ""]  ← lots of empty strings
-
-strings.Fields("one\ttwo\nthree")
-// ["one", "two", "three"]  ← handles tabs and newlines too
-```
-
-`Fields` is the right tool when you want to tokenize human-readable text with variable whitespace. `Split` with `" "` produces empty strings for consecutive delimiters.
-
-</details>
-
----
-
-### Q7 🟡 — What does `strings.Builder` do and why use it instead of `+` concatenation?
-
-**A)** It validates string contents  
-**B)** It's a mutable byte buffer optimized for building strings piece-by-piece — avoids the O(n²) allocation cost of repeated `+` concatenation  
-**C)** It's the same as `fmt.Sprintf`  
-**D)** It encrypts the string  
-
-<details><summary>💡 Answer</summary>
-
-**B) A mutable buffer for efficient string building**
-
-```go
-// BAD — each + creates a new string allocation:
-result := ""
-for i := 0; i < 1000; i++ {
-    result += fmt.Sprintf("item%d,", i)  // 1000 allocations
-}
-
-// GOOD — one buffer, one final string:
-var b strings.Builder
-for i := 0; i < 1000; i++ {
-    fmt.Fprintf(&b, "item%d,", i)
-}
-result := b.String()
-```
-
-For small concatenations (2–3 strings), `+` is fine. For loops or many pieces, use `strings.Builder` or `strings.Join`. The performance difference is significant for large data.
-
-</details>
-
----
-
-### Q8 🟡 — What does `strings.Repeat("ab", 3)` return?
-
-**A)** `"ab3"`  
-**B)** `"ababab"`  
-**C)** `"ab ab ab"`  
-**D)** An error  
-
-<details><summary>💡 Answer</summary>
-
-**B) `"ababab"`**
-
-```go
-strings.Repeat("ab", 3)   // "ababab"
-strings.Repeat("-", 20)   // "--------------------"
-strings.Repeat(".", 0)    // "" — zero repetitions
-```
-
-Useful for generating separators, padding, or test data. `n` must be non-negative — negative n panics.
-
-</details>
-
----
-
-### Q9 🔴 — What is the output?
-
-```go
-s := "hello"
-s = strings.Replace(s, "l", "r", -1)
-t := strings.ToUpper(s[1:3])
-fmt.Println(s, t)
-```
-
-**A)** `"herro ER"`  
-**B)** `"hello EL"`  
-**C)** Compile error  
-**D)** `"herro RR"`  
-
-<details><summary>💡 Answer</summary>
-
-**A) `"herro ER"`**
-
-Step by step:
-1. `strings.Replace("hello", "l", "r", -1)` → `"herro"` (both `l`s replaced)
-2. `s[1:3]` = bytes at index 1 and 2 = `"er"`
-3. `strings.ToUpper("er")` = `"ER"`
-4. Output: `herro ER`
-
-String slicing `s[i:j]` gives bytes from index `i` to `j-1`. This works correctly for ASCII. For multi-byte Unicode, use `[]rune(s)` to slice by character.
-
-</details>
-
----
-
-### Q10 🔴 — What is the difference between `strings.EqualFold("Go", "go")` and `strings.ToLower("Go") == strings.ToLower("go")`?
-
-**A)** `EqualFold` is wrong — always use `ToLower` for comparison  
-**B)** Both produce the same result (`true`), but `EqualFold` is more efficient — it compares directly without allocating new strings  
-**C)** `EqualFold` is case-sensitive; `ToLower` comparison is not  
-**D)** `EqualFold` only works for ASCII; `ToLower` handles Unicode  
-
-<details><summary>💡 Answer</summary>
-
-**B) Same result, but `EqualFold` avoids string allocation**
-
-```go
-strings.EqualFold("Go", "GO")    // true — case-insensitive, no allocation
-strings.EqualFold("café", "CAFÉ") // true — Unicode-aware
-strings.ToLower("Go") == strings.ToLower("GO") // also true, but creates 2 new strings
-```
-
-`EqualFold` is the idiomatic Go way to do case-insensitive string comparison. It's faster and uses less memory than the `ToLower`/`ToUpper` approach. It's also correctly Unicode-aware.
-
-</details>
-
----
-
-## 📋 SECTION 2: REGULAR EXPRESSIONS (8 Questions)
-
-### Q11 🟢 — What does `regexp.MustCompile(pattern)` do differently from `regexp.Compile(pattern)`?
-
-**A)** `MustCompile` is faster  
-**B)** `MustCompile` panics if the pattern is invalid; `Compile` returns an error — use `MustCompile` for patterns known at compile time  
-**C)** `MustCompile` matches more patterns  
-**D)** They are identical  
-
-<details><summary>💡 Answer</summary>
-
-**B) `MustCompile` panics on invalid pattern; `Compile` returns `(Regexp, error)`**
-
-```go
-// For package-level (startup) compilation — panic is appropriate:
-var re = regexp.MustCompile(`\d+`)
-
-// For runtime patterns (user input) — always check the error:
-re, err := regexp.Compile(userInput)
-if err != nil {
-    return fmt.Errorf("invalid pattern: %w", err)
-}
-```
-
-Never use `MustCompile` with user-supplied patterns — a bad pattern panics your program. Use it only for literal patterns you control and that you've already verified are valid.
-
-</details>
-
----
-
-### Q12 🟢 — What does `re.MatchString(s)` return?
-
-**A)** The matched substring  
-**B)** `true` if the pattern matches anywhere in `s`, `false` otherwise — also returns an error  
-**C)** All matches as a `[]string`  
-**D)** The number of matches  
-
-<details><summary>💡 Answer</summary>
-
-**B) `(bool, error)` — true if pattern matches anywhere in the string**
-
-```go
-re := regexp.MustCompile(`\d+`)
-matched, _ := re.MatchString("hello 42 world") // true
-matched, _ = re.MatchString("no digits here")  // false
-
-// Shorthand for simple checks:
-ok, _ := regexp.MatchString(`^\d+$`, "12345") // true — entire string is digits
-```
-
-`MatchString` checks if the pattern appears *anywhere* in the string. To match the whole string, anchor with `^` (start) and `$` (end).
-
-</details>
-
----
-
-### Q13 🟡 — What is the difference between `FindString` and `FindAllString`?
-
-**A)** `FindString` is case-sensitive; `FindAllString` is not  
-**B)** `FindString` returns the first (leftmost) match; `FindAllString` returns all non-overlapping matches as a `[]string`  
-**C)** `FindAllString` is deprecated  
-**D)** `FindString` uses the whole string; `FindAllString` searches word-by-word  
-
-<details><summary>💡 Answer</summary>
-
-**B) `FindString` = first match; `FindAllString` = all matches**
-
-```go
-re := regexp.MustCompile(`\d+`)
-
-re.FindString("cat 3 dog 17 bird 5")
-// "3" — only the first match
-
-re.FindAllString("cat 3 dog 17 bird 5", -1)
-// ["3", "17", "5"] — all matches (-1 means no limit)
-
-re.FindAllString("cat 3 dog 17", 2)
-// ["3", "17"] — at most 2 matches
-```
-
-The second argument to `FindAll*` is the maximum count: `-1` means all, `n > 0` means at most n matches.
-
-</details>
-
----
-
-### Q14 🟡 — What do capturing groups `()` return in `FindAllStringSubmatch`?
-
-**A)** They are ignored — same result as without groups  
-**B)** Each match returns a `[]string` where `[0]` is the full match and `[1]`, `[2]`... are the capture groups  
-**C)** Compile error  
-**D)** Only the captured groups, not the full match  
-
-<details><summary>💡 Answer</summary>
-
-**B) `[0]` = full match, `[1]`, `[2]`... = capture groups**
-
-```go
-re := regexp.MustCompile(`(\w+)\s*=\s*(\w+)`)
-matches := re.FindAllStringSubmatch("x = 10, y = 20", -1)
-
-// matches[0] = ["x = 10", "x", "10"]
-// matches[1] = ["y = 20", "y", "20"]
-
-for _, m := range matches {
-    key := m[1]   // "x", then "y"
-    val := m[2]   // "10", then "20"
-    fmt.Printf("%s → %s\n", key, val)
-}
-```
-
-Capture groups are the main reason to use regex over simple string functions. They extract structured data from patterned text in one pass.
-
-</details>
-
----
-
-### Q15 🟡 — What does `re.ReplaceAllString(src, repl)` do?
-
-**A)** Replaces only the first match  
-**B)** Replaces every non-overlapping match of `re` in `src` with `repl`, returning a new string  
-**C)** Modifies `src` in place  
-**D)** Returns a `[]byte`  
-
-<details><summary>💡 Answer</summary>
-
-**B) Replaces all matches, returns a new string**
-
-```go
-re := regexp.MustCompile(`\d+`)
-result := re.ReplaceAllString("cat3dog17", "NUM")
-// "catNUMdogNUM"
-
-// Use $1, $2 to reference capture groups in replacement:
-re2 := regexp.MustCompile(`(\w+)\s(\w+)`)
-result2 := re2.ReplaceAllString("John Smith", "$2, $1")
-// "Smith, John"
-```
-
-`$1`, `$2` in the replacement string refer to capture group contents. This makes regex replacement extremely powerful for reformatting text.
-
-</details>
-
----
-
-### Q16 🟡 — What does `re.ReplaceAllStringFunc(src, func(string) string)` allow that `ReplaceAllString` cannot do?
-
-**A)** Nothing extra  
-**B)** The replacement is computed by calling a function on each match — enables dynamic replacements based on the matched text  
-**C)** It works on `[]byte` instead of strings  
-**D)** It handles overlapping matches  
-
-<details><summary>💡 Answer</summary>
-
-**B) Dynamic replacement via a function called on each match**
-
-```go
-re := regexp.MustCompile(`\d+`)
-
-// Double every number found:
-result := re.ReplaceAllStringFunc("cat 3 and 17", func(match string) string {
-    n, _ := strconv.Atoi(match)
-    return strconv.Itoa(n * 2)
-})
-// "cat 6 and 34"
-
-// Convert hex to decimal:
-hexRe := regexp.MustCompile(`0x[0-9a-fA-F]+`)
-result2 := hexRe.ReplaceAllStringFunc("value is 0xFF", func(m string) string {
-    n, _ := strconv.ParseInt(m[2:], 16, 64)
-    return strconv.FormatInt(n, 10)
-})
-// "value is 255"
-```
-
-This is one of the most powerful regex features — transforms matches using arbitrary Go logic.
-
-</details>
-
----
-
-### Q17 🔴 — What is the output?
-
-```go
-re := regexp.MustCompile(`(ha)+`)
-fmt.Println(re.FindString("hahaha"))
-fmt.Println(re.FindAllString("ha haha hahaha", -1))
-```
-
-**A)** `"ha"` and `["ha", "ha", "ha"]`  
-**B)** `"hahaha"` and `["ha", "haha", "hahaha"]`  
-**C)** `"hahaha"` and `["ha", "haha", "hahaha"]`  
-**D)** `"hahaha"` and `["ha", "haha", "hahaha"]` — but `FindAllString` finds only the longest  
-
-<details><summary>💡 Answer</summary>
-
-**B) `"hahaha"` and `["ha", "haha", "hahaha"]`**
-
-`(ha)+` matches one or more consecutive `"ha"` sequences. It's greedy — always matches as much as possible.
-- In `"hahaha"`: greedily matches the full `"hahaha"`
-- In `"ha haha hahaha"`: three separate words, each matched in full: `"ha"`, `"haha"`, `"hahaha"`
-
-Regex is greedy by default — quantifiers (`+`, `*`, `?`) consume as many characters as possible. Add `?` after the quantifier for lazy (minimal) matching: `(ha)+?`.
-
-</details>
-
----
-
-### Q18 🔴 — What do the anchors `^` and `$` mean in a regex?
-
-**A)** `^` means "not", `$` means end of file  
-**B)** `^` matches the start of the string (or line in multiline mode); `$` matches the end — together they assert the whole string matches the pattern  
-**C)** `^` matches uppercase; `$` is a variable reference  
-**D)** They are invalid in Go regex  
-
-<details><summary>💡 Answer</summary>
-
-**B) `^` = start of string, `$` = end of string**
-
-```go
-re := regexp.MustCompile(`^\d+$`)
-re.MatchString("12345")    // true  — all digits, nothing else
-re.MatchString("123abc")   // false — has non-digit after digits
-re.MatchString("  123  ")  // false — has spaces
-
-// Without anchors:
-re2 := regexp.MustCompile(`\d+`)
-re2.MatchString("abc123def")  // true — digits found anywhere
-```
-
-Without anchors, a regex matches if the pattern appears *anywhere* in the string. With `^` and `$`, the entire string must match. This is critical for input validation.
-
-</details>
-
----
-
-## 📋 SECTION 3: FILE I/O (7 Questions)
-
-### Q19 🟢 — What is the simplest way to read an entire file into memory as a `[]byte`?
-
-**A)** `io.Read("file.txt")`  
-**B)** `os.ReadFile("file.txt")` — returns `([]byte, error)`  
-**C)** `file.ReadAll()`  
-**D)** `bufio.ReadFile("file.txt")`  
-
-<details><summary>💡 Answer</summary>
-
-**B) `os.ReadFile("file.txt")` — returns `([]byte, error)`**
-
-```go
-data, err := os.ReadFile("input.txt")
-if err != nil {
-    return fmt.Errorf("reading file: %w", err)
-}
-content := string(data)  // convert to string for text processing
-```
-
-`os.ReadFile` (added in Go 1.16) reads the whole file in one call. Use it when the file fits in memory. For very large files, use `bufio.Scanner` to read line by line instead.
-
-</details>
-
----
-
-### Q20 🟢 — What is the simplest way to write a string to a file, creating it if it doesn't exist?
-
-**A)** `io.WriteFile("out.txt", data)`  
-**B)** `os.WriteFile("out.txt", []byte(content), 0644)` — creates or overwrites  
-**C)** `file.Write("out.txt", content)`  
-**D)** `os.Create("out.txt"); file.WriteString(content)`  
-
-<details><summary>💡 Answer</summary>
-
-**B) `os.WriteFile("out.txt", []byte(content), 0644)`**
-
-```go
-content := "processed output\n"
-err := os.WriteFile("output.txt", []byte(content), 0644)
-if err != nil {
-    return fmt.Errorf("writing file: %w", err)
-}
-```
-
-`0644` is the Unix file permission: owner can read+write, group and others can only read. `os.WriteFile` creates the file if it doesn't exist and truncates (overwrites) it if it does. For appending, open with `os.OpenFile` and `os.O_APPEND`.
-
-</details>
-
----
-
-### Q21 🟡 — How do you read a text file line by line without loading the whole file into memory?
-
-**A)** `strings.Split(os.ReadFile(name), "\n")`  
-**B)** Use `bufio.Scanner`:
-```go
-f, _ := os.Open("file.txt")
-scanner := bufio.NewScanner(f)
-for scanner.Scan() {
-    line := scanner.Text()
-}
-```
-**C)** `io.ReadLines("file.txt")`  
-**D)** `os.ReadLines("file.txt")`  
-
-<details><summary>💡 Answer</summary>
-
-**B) `bufio.Scanner` with `Scan()` + `Text()` loop**
-
-```go
-f, err := os.Open("file.txt")
-if err != nil { return err }
-defer f.Close()
-
-scanner := bufio.NewScanner(f)
-for scanner.Scan() {
-    line := scanner.Text()  // line without the trailing newline
-    // process line
-}
-if err := scanner.Err(); err != nil {
-    return err  // always check scanner errors after the loop
-}
-```
-
-`scanner.Text()` returns the current line without the `\n`. `scanner.Scan()` returns `false` at EOF. Always check `scanner.Err()` after the loop — a `false` from `Scan()` could mean EOF or an error.
-
-</details>
-
----
-
-### Q22 🟡 — What is the correct way to handle command-line arguments in Go?
-
-**A)** `args := os.Argv`  
-**B)** `args := os.Args` — a `[]string` where `[0]` is the program name and `[1:]` are the user arguments  
-**C)** `args := flag.Args()`  
-**D)** `func main(args []string)`  
-
-<details><summary>💡 Answer</summary>
-
-**B) `os.Args` — `[0]` is the binary name, `[1:]` are user arguments**
-
-```go
-// go run . input.txt output.txt
-// os.Args = ["./program", "input.txt", "output.txt"]
-
-func main() {
-    if len(os.Args) != 3 {
-        fmt.Fprintln(os.Stderr, "Usage: program <input> <output>")
-        os.Exit(1)
-    }
-    inputFile := os.Args[1]   // "input.txt"
-    outputFile := os.Args[2]  // "output.txt"
-}
-```
-
-Always validate `len(os.Args)` before indexing — accessing `os.Args[1]` without checking panics if no argument was given.
-
-</details>
-
----
-
-### Q23 🟡 — What does `defer f.Close()` do and why place it immediately after opening a file?
-
-**A)** Closes the file immediately  
-**B)** Schedules the file to be closed when the surrounding function returns — placing it right after open guarantees cleanup even if the function returns early or panics  
-**C)** Flushes the file buffer  
-**D)** Makes the file read-only  
-
-<details><summary>💡 Answer</summary>
-
-**B) Deferred close — guaranteed cleanup when the function exits**
-
-```go
-f, err := os.Open("file.txt")
-if err != nil { return err }
-defer f.Close()  // guaranteed to run when function returns — even on early returns
-
-// ... rest of the function — no need to remember to close
-```
-
-Without `defer`, every early return path needs a manual `f.Close()` — easy to miss. With `defer`, one line covers all exit paths. Not closing files leaks file descriptors — on Linux, the default limit is 1024 open files per process.
-
-</details>
-
----
-
-### Q24 🔴 — What is the difference between `os.Open` and `os.OpenFile`?
-
-**A)** `os.Open` is for reading; `os.OpenFile` gives control over flags (read, write, append, create) and permissions  
-**B)** They are identical  
-**C)** `os.OpenFile` is deprecated  
-**D)** `os.Open` creates the file if it doesn't exist; `os.OpenFile` doesn't  
-
-<details><summary>💡 Answer</summary>
-
-**A) `os.Open` = read-only shortcut; `os.OpenFile` = full control**
-
-```go
-// os.Open — read-only (O_RDONLY):
-f, err := os.Open("file.txt")
-
-// os.OpenFile — full control:
-f, err := os.OpenFile("file.txt",
-    os.O_RDWR|os.O_CREATE|os.O_APPEND,  // flags
-    0644,                                 // permissions
+package main
+
+import (
+    "fmt"
+    "os"
 )
 
-// Common flag combinations:
-// os.O_RDONLY              — read only
-// os.O_WRONLY|os.O_CREATE|os.O_TRUNC  — write, create, overwrite (like os.Create)
-// os.O_WRONLY|os.O_CREATE|os.O_APPEND — append to file
-// os.O_RDWR                           — read and write
-```
-
-Use `os.Open` for reading, `os.Create` for creating/overwriting, and `os.OpenFile` when you need append or specific combinations.
-
-</details>
-
----
-
-### Q25 🔴 — What happens if `bufio.Scanner` is used to read a line longer than its buffer (default 64KB)?
-
-**A)** It reads the line in chunks automatically  
-**B)** `scanner.Scan()` returns `false` and `scanner.Err()` returns `bufio.ErrTooLong`  
-**C)** It panics  
-**D)** The line is silently truncated  
-
-<details><summary>💡 Answer</summary>
-
-**B) `scanner.Scan()` returns `false`, error is `bufio.ErrTooLong`**
-
-```go
-scanner := bufio.NewScanner(f)
-
-// Fix: increase buffer for files with very long lines:
-buf := make([]byte, 1024*1024)           // 1MB buffer
-scanner.Buffer(buf, len(buf))            // max token size = 1MB
-
-for scanner.Scan() {
-    // process line
-}
-if err := scanner.Err(); err != nil {
-    log.Fatal(err)  // catches ErrTooLong and other errors
+func main() {
+    fmt.Println(len(os.Args))
+    fmt.Println(os.Args[0])
 }
 ```
+**Run as:** `go run main.go input.txt output.txt`
 
-This is a gotcha for text processing — if input files have very long lines (e.g. minified JSON or SVG), the default scanner will fail. Always check `scanner.Err()` after the loop.
+**Question:** What does each line print?
 
-</details>
+**Answer:**
+- `3`
+- The path to the compiled binary (e.g. `/tmp/go-build.../main` or `main`)
 
----
+**Explanation:**
+- `os.Args[0]` is always the **program name/path** — not the first user argument
+- `os.Args[1]` = `"input.txt"`, `os.Args[2]` = `"output.txt"`
+- `len(os.Args)` = 3 (program + 2 arguments)
+- Accessing `os.Args[3]` would panic with index out of range!
 
-## 📋 SECTION 4: strconv — TYPE CONVERSION (7 Questions)
-
-### Q26 🟢 — How do you convert the string `"42"` to the integer `42`?
-
-**A)** `int("42")`  
-**B)** `strconv.Atoi("42")` — returns `(int, error)`  
-**C)** `fmt.Sscanf("42", "%d")`  
-**D)** `(int)("42")`  
-
-<details><summary>💡 Answer</summary>
-
-**B) `strconv.Atoi("42")` — returns `(int, error)`**
-
-```go
-n, err := strconv.Atoi("42")
-if err != nil {
-    // "42" was not a valid integer
-}
-// n == 42
-
-// For int64:
-n64, err := strconv.ParseInt("42", 10, 64)
-
-// For float:
-f, err := strconv.ParseFloat("3.14", 64)
-```
-
-Always check the error — if the string is not a valid integer, the error is non-nil. `Atoi` is equivalent to `ParseInt(s, 10, 0)` — base 10, platform int size.
-
-</details>
+**Key Concept:** `os.Args[0]` is the binary itself — user args start at index 1!
 
 ---
 
-### Q27 🟢 — How do you convert the integer `42` to the string `"42"`?
-
-**A)** `string(42)` — convert with type cast  
-**B)** `strconv.Itoa(42)`  
-**C)** `fmt.Sprint(42)`  
-**D)** Both B and C work; B is more efficient  
-
-<details><summary>💡 Answer</summary>
-
-**D) Both work — `strconv.Itoa` is more efficient**
-
+### Problem 2: Args Validation Trap
 ```go
-strconv.Itoa(42)      // "42" — fast, no allocation beyond the string
-fmt.Sprintf("%d", 42) // "42" — works but slower (uses reflection internally)
-fmt.Sprint(42)        // "42" — also works
+package main
 
-// WRONG — do NOT use:
-string(42)   // this gives the Unicode character with code point 42 ("*"), NOT "42"
-```
+import (
+    "fmt"
+    "os"
+)
 
-`string(42)` is the classic trap — it creates a single-character string with Unicode code point 42, not the string `"42"`. Always use `strconv.Itoa` or `fmt.Sprintf`.
-
-</details>
-
----
-
-### Q28 🟡 — What does `strconv.ParseInt("FF", 16, 64)` return?
-
-**A)** An error — "FF" is not a number  
-**B)** `255` — parses "FF" as base-16 (hexadecimal)  
-**C)** `0xFF`  
-**D)** `"FF"` converted to ASCII codes  
-
-<details><summary>💡 Answer</summary>
-
-**B) `255` — hex FF = decimal 255**
-
-```go
-n, err := strconv.ParseInt("FF", 16, 64)  // 255, nil
-n, err = strconv.ParseInt("10", 2, 64)   // 2 (binary 10)
-n, err = strconv.ParseInt("10", 8, 64)   // 8 (octal 10)
-n, err = strconv.ParseInt("10", 10, 64)  // 10 (decimal)
-
-// Arguments: (string, base, bitSize)
-// base: 2, 8, 10, 16 (or 0 to detect from prefix: "0x", "0", "0b")
-// bitSize: 8, 16, 32, 64 — used for overflow detection
-```
-
-The third argument (bitSize) controls overflow checking, not the output type. The return type is always `int64` — cast to smaller types if needed.
-
-</details>
-
----
-
-### Q29 🟡 — `strconv.Atoi` returns `(int, error)`. What error does it return for `strconv.Atoi("abc")`?
-
-**A)** `nil` — it silently returns 0  
-**B)** A `*strconv.NumError` with `.Err == strconv.ErrSyntax`  
-**C)** A generic `errors.New("invalid")` error  
-**D)** A panic  
-
-<details><summary>💡 Answer</summary>
-
-**B) `*strconv.NumError` with `ErrSyntax`**
-
-```go
-n, err := strconv.Atoi("abc")
-if err != nil {
-    numErr := err.(*strconv.NumError)
-    fmt.Println(numErr.Func)  // "Atoi"
-    fmt.Println(numErr.Num)   // "abc"
-    fmt.Println(numErr.Err)   // strconv.ErrSyntax or strconv.ErrRange
-}
-// n == 0 when err != nil
-
-// ErrSyntax  — input is not a valid number
-// ErrRange   — number is valid but too large for the type
-```
-
-In practice, just check `if err != nil` and handle it — you rarely need to inspect the specific error type unless you want to distinguish syntax vs range errors.
-
-</details>
-
----
-
-### Q30 🟡 — What does `strconv.Quote("hello\nworld")` return?
-
-**A)** `hello\nworld` — removes the escape sequence  
-**B)** `"hello\nworld"` — a Go string literal with the newline as `\n` and surrounding quotes  
-**C)** An error  
-**D)** `hello world`  
-
-<details><summary>💡 Answer</summary>
-
-**B) `"hello\nworld"` — produces a valid Go string literal**
-
-```go
-strconv.Quote("hello\nworld")  // `"hello\nworld"` (includes the quotes!)
-strconv.Quote(`tab	here`)     // `"tab\there"`
-strconv.Unquote(`"hello"`)     // "hello", nil
-
-// Useful for:
-// - Debugging: printing strings with invisible characters visible
-// - Code generation: producing valid Go string literals
-fmt.Println(strconv.Quote("line1\nline2"))
-// Output: "line1\nline2"   ← the \n is printed as backslash-n, not a newline
-```
-
-`Quote` is invaluable for debugging text processing — it makes invisible characters (newlines, tabs, carriage returns) visible.
-
-</details>
-
----
-
-### Q31 🔴 — What is the output?
-
-```go
-s := "123abc"
-n, err := strconv.Atoi(s)
-fmt.Println(n, err != nil)
-
-s2 := "99999999999999999999"
-n2, err2 := strconv.Atoi(s2)
-fmt.Println(n2, err2 != nil)
-```
-
-**A)** `0 true` then `0 true`  
-**B)** `123 false` then `99999999999999999999 false`  
-**C)** Panic on first call  
-**D)** `0 true` then some very large number `false`  
-
-<details><summary>💡 Answer</summary>
-
-**A) `0 true` then `0 true`**
-
-- `"123abc"` is not a valid integer (mixed content) → `ErrSyntax`, returns `0`
-- `"99999999999999999999"` is too large for `int` (max ~9.2×10¹⁸ on 64-bit) → `ErrRange`, returns the max or min `int`
-
-Actually for ErrRange, `Atoi` returns `math.MaxInt` (not 0), so: `9223372036854775807 true` for the second. The key point: **both return non-nil errors**. Always check the error before using the returned value.
-
-</details>
-
----
-
-### Q32 🔴 — You need to replace every number in a string with its doubled value. Which approach works correctly?
-
-**A)**
-```go
-strings.ReplaceAll(s, `\d+`, func(m string) string {
-    n, _ := strconv.Atoi(m); return strconv.Itoa(n * 2)
-})
-```
-**B)**
-```go
-re := regexp.MustCompile(`\d+`)
-re.ReplaceAllStringFunc(s, func(m string) string {
-    n, _ := strconv.Atoi(m); return strconv.Itoa(n * 2)
-})
-```
-**C)**
-```go
-for _, c := range s {
-    if c >= '0' && c <= '9' { /* double it */ }
+func main() {
+    if len(os.Args) < 3 {
+        fmt.Println("Usage: program <input> <output>")
+        os.Exit(1)
+    }
+    input := os.Args[1]
+    output := os.Args[2]
+    fmt.Println(input, output)
 }
 ```
-**D)** Both A and B work  
+**Run as:** `go run main.go`
 
-<details><summary>💡 Answer</summary>
+**Question:** What happens? What's the exit code?
 
-**B) `regexp.ReplaceAllStringFunc` — the correct tool for dynamic replacements**
+**Answer:**
+- Prints: `Usage: program <input> <output>`
+- Exits with code `1` (non-zero = error)
+- The lines after `os.Exit(1)` are **never reached**
 
+**Explanation:**
+- `os.Exit(1)` terminates immediately — no deferred functions run!
+- Exit code `0` = success, any non-zero = failure
+- Checking `len(os.Args)` before indexing prevents panics
+- This is the standard guard pattern for CLI tools
+
+**Key Concept:** Always validate `len(os.Args)` before indexing — and `os.Exit` skips deferred calls!
+
+---
+
+### Problem 3: ReadFile Error Handling
 ```go
-re := regexp.MustCompile(`\d+`)
-result := re.ReplaceAllStringFunc("cat 3 and 17 dogs", func(m string) string {
-    n, _ := strconv.Atoi(m)
-    return strconv.Itoa(n * 2)
-})
-// "cat 6 and 34 dogs"
+package main
+
+import (
+    "fmt"
+    "os"
+)
+
+func main() {
+    data, err := os.ReadFile("nonexistent.txt")
+    if err != nil {
+        fmt.Println("Error:", err)
+        os.Exit(1)
+    }
+    fmt.Println(string(data))
+}
+```
+**Question:** What type is `data`? What does `string(data)` do? What prints when file doesn't exist?
+
+**Answer:**
+- `data` is `[]byte` (a byte slice)
+- `string(data)` converts the byte slice to a UTF-8 string
+- Prints something like: `Error: open nonexistent.txt: no such file or directory`
+
+**Explanation:**
+- `os.ReadFile` returns `([]byte, error)` — the entire file content as bytes
+- Always check `err != nil` before using `data`
+- Converting `[]byte` → `string` is a zero-allocation operation in this context
+- The error message includes the OS-level description
+
+**Key Concept:** `os.ReadFile` returns `[]byte` — always check the error before using the data!
+
+---
+
+### Problem 4: WriteFile Permissions
+```go
+package main
+
+import (
+    "fmt"
+    "os"
+)
+
+func main() {
+    content := "Hello, World!\n"
+    err := os.WriteFile("output.txt", []byte(content), 0644)
+    if err != nil {
+        fmt.Println("Error:", err)
+        os.Exit(1)
+    }
+    fmt.Println("Written successfully")
+}
+```
+**Question:** What does `0644` mean? What does `[]byte(content)` do? Does WriteFile append or overwrite?
+
+**Answer:**
+- `0644` is a Unix file permission: owner can read/write (6), group can read (4), others can read (4)
+- `[]byte(content)` converts the string to a byte slice (required by WriteFile)
+- `WriteFile` **overwrites** the entire file — it does NOT append!
+
+**Explanation:**
+- File permissions use octal notation (prefix `0`)
+- `0644` is standard for readable files: `-rw-r--r--`
+- `os.WriteFile` creates the file if it doesn't exist, or **truncates and overwrites** if it does
+- To append, you'd use `os.OpenFile` with `os.O_APPEND` flag
+
+**Key Concept:** `os.WriteFile` always overwrites — use `os.OpenFile` with `O_APPEND` to append!
+
+---
+
+### Problem 5: ReadFile + WriteFile Round Trip
+```go
+package main
+
+import (
+    "fmt"
+    "os"
+    "strings"
+)
+
+func main() {
+    os.WriteFile("test.txt", []byte("hello world\n"), 0644)
+    
+    data, _ := os.ReadFile("test.txt")
+    result := strings.ToUpper(string(data))
+    os.WriteFile("test.txt", []byte(result), 0644)
+    
+    data2, _ := os.ReadFile("test.txt")
+    fmt.Print(string(data2))
+}
+```
+**Question:** What gets printed?
+
+**Answer:** `HELLO WORLD`
+
+**Explanation:**
+- Write `"hello world\n"` → read it back → uppercase → write again → read and print
+- `strings.ToUpper` uppercases the entire string including the `\n` (whitespace is unaffected)
+- `fmt.Print` (not `Println`) — the `\n` in the content handles the newline
+- `_` discards the error — fine for examples, bad in production!
+
+**Key Concept:** Ignoring errors with `_` is a code smell — always handle them in real programs!
+
+---
+
+## BLOCK 2 — String Operations
+
+### Problem 6: Fields vs Split
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    s := "  hello   world   go  "
+    
+    a := strings.Fields(s)
+    b := strings.Split(s, " ")
+    
+    fmt.Println(len(a))
+    fmt.Println(len(b))
+    fmt.Printf("%q\n", a)
+    fmt.Printf("%q\n", b[0])
+}
+```
+**Question:** What does each line print?
+
+**Answer:**
+- `3` — Fields splits on ANY whitespace and ignores leading/trailing/multiple spaces
+- `23` — Split splits on every single `" "` character, including the empty strings between spaces
+- `["hello" "world" "go"]`
+- `""` — first element is the empty string before the leading space
+
+**Explanation:**
+- `strings.Fields` is smart: trims whitespace, splits on any whitespace run
+- `strings.Split(s, " ")` is literal: splits at every single space character
+- `"  hello"` split by `" "` gives `["", "", "hello", ...]`
+- For tokenizing user input or files, **always prefer `strings.Fields`**
+
+**Key Concept:** `Fields` ignores extra whitespace — `Split` is literal and creates empty strings!
+
+---
+
+### Problem 7: TrimSpace Scope
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    s := "  hello   world  "
+    
+    fmt.Printf("%q\n", strings.TrimSpace(s))
+    fmt.Printf("%q\n", strings.Trim(s, " "))
+    fmt.Printf("%q\n", strings.TrimLeft(s, " "))
+    fmt.Printf("%q\n", strings.TrimRight(s, " "))
+}
+```
+**Question:** What does each line print?
+
+**Answer:**
+- `"hello   world"` — trims leading AND trailing whitespace (tabs, newlines too)
+- `"hello   world"` — same result here (trims spaces from both ends)
+- `"hello   world  "` — trims leading only
+- `"  hello   world"` — trims trailing only
+
+**Explanation:**
+- `TrimSpace` handles all Unicode whitespace: spaces, tabs `\t`, newlines `\n`, etc.
+- `Trim(s, cutset)` trims any characters in the cutset from both ends
+- `TrimLeft` / `TrimRight` trim from one side only
+- The internal spaces `"   "` between words are NOT touched by any of these
+
+**Key Concept:** `TrimSpace` trims all whitespace — internal spaces are never touched!
+
+---
+
+### Problem 8: HasPrefix + TrimPrefix Chain
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    words := []string{"(hello)", "world", "(go)", "lang"}
+    
+    for _, w := range words {
+        if strings.HasPrefix(w, "(") {
+            inner := strings.TrimPrefix(w, "(")
+            inner = strings.TrimSuffix(inner, ")")
+            fmt.Println(strings.ToUpper(inner))
+        } else {
+            fmt.Println(w)
+        }
+    }
+}
+```
+**Question:** What gets printed?
+
+**Answer:**
+```
+HELLO
+world
+GO
+lang
 ```
 
-Option A is wrong: `strings.ReplaceAll` takes a string replacement, not a function. Option C processes digit-by-digit, so `"17"` would be processed as `"1"` then `"7"` separately — incorrect for multi-digit numbers. Option B is the correct pattern: regex finds complete number tokens, function transforms each one.
+**Explanation:**
+- For words starting with `(`: strip the `(` prefix, strip the `)` suffix, uppercase
+- `TrimPrefix` only removes the prefix if it exists — safe to call even if absent
+- `TrimSuffix` works the same way for the end
+- For words without `(`: print as-is
 
-</details>
-
----
-
-## 📊 Score Interpretation
-
-| Score | Result |
-|---|---|
-| 30–32 ✅ | **Exceptional** — string manipulation and regex mastered. |
-| 26–29 ✅ | **Ready** — review any missed sections and start. |
-| 20–25 ⚠️ | **Study first** — identify your weakest section and work through it. |
-| Below 20 ❌ | **Not ready** — spend time with the `strings`, `regexp`, and `strconv` package docs and examples. |
+**Key Concept:** `TrimPrefix`/`TrimSuffix` are safe — they do nothing if the fix isn't present!
 
 ---
 
-## 🔍 Review Map
+### Problem 9: strings.Join Behavior
+```go
+package main
 
-| Missed | Topic to Study |
-|---|---|
-| Q1–Q10 | `strings.ToUpper/Lower`, `TrimSpace`, `Contains`, `Split/Join`, `Replace/ReplaceAll`, `Fields`, `Builder`, `Repeat`, `EqualFold` |
-| Q11–Q18 | `regexp.Compile` vs `MustCompile`, `MatchString`, `FindString`, `FindAllString`, capture groups, `ReplaceAllStringFunc`, anchors `^`/`$` |
-| Q19–Q25 | `os.ReadFile`, `os.WriteFile`, `bufio.Scanner`, `os.Args`, `defer f.Close()`, `os.Open` vs `os.OpenFile`, scanner buffer |
-| Q26–Q32 | `strconv.Atoi`, `strconv.Itoa`, `ParseInt` bases, `NumError`, `Quote`, combining regex + strconv |
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    words := []string{"the", "quick", "brown", "fox"}
+    
+    fmt.Println(strings.Join(words, " "))
+    fmt.Println(strings.Join(words, ", "))
+    fmt.Println(strings.Join(words, ""))
+    fmt.Println(strings.Join([]string{}, " "))
+    fmt.Println(strings.Join([]string{"solo"}, " "))
+}
+```
+**Question:** What does each line print?
+
+**Answer:**
+- `the quick brown fox`
+- `the, quick, brown, fox`
+- `thequickbrownfox`
+- `` (empty string)
+- `solo`
+
+**Explanation:**
+- `Join` places the separator **between** elements — not before the first or after the last
+- Empty slice → empty string (no panic)
+- Single element → just the element, separator never used
+- This is the inverse of `strings.Fields`/`strings.Split`
+
+**Key Concept:** `Join` places separator BETWEEN elements — empty/single slices are handled safely!
+
+---
+
+### Problem 10: String Building in a Loop
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    words := []string{"hello", "world", "go"}
+    
+    // Method A
+    result1 := ""
+    for _, w := range words {
+        result1 += w + " "
+    }
+    
+    // Method B
+    result2 := strings.Join(words, " ")
+    
+    fmt.Printf("%q\n", strings.TrimSpace(result1))
+    fmt.Printf("%q\n", result2)
+    fmt.Println(result1 == result2)
+}
+```
+**Question:** What does each line print?
+
+**Answer:**
+- `"hello world go"`
+- `"hello world go"`
+- `false` — result1 has a trailing space before TrimSpace, but after trim they match... wait!
+
+**Corrected Answer:**
+- `"hello world go"` — trimmed
+- `"hello world go"` — no trailing space
+- `false` — because result1 (before trim) has a trailing space, they are different strings in memory, BUT after `TrimSpace` the printed values look the same. The `==` comparison compares `result1` (with trailing space) to `result2` (without) → `false`
+
+**Explanation:**
+- `result1` = `"hello world go "` (trailing space)
+- `result2` = `"hello world go"` (no trailing space)
+- The `Printf` trims result1 for display but the `==` compares the original
+- Method A with `+=` creates a new string each iteration (O(n²)) — `strings.Join` is more efficient
+
+**Key Concept:** `+=` in a loop is inefficient — prefer `strings.Join` or `strings.Builder`!
+
+---
+
+## BLOCK 3 — Number Base Conversion
+
+### Problem 11: strconv.ParseInt Basics
+```go
+package main
+
+import (
+    "fmt"
+    "strconv"
+)
+
+func main() {
+    n1, err1 := strconv.ParseInt("ff", 16, 64)
+    n2, err2 := strconv.ParseInt("1010", 2, 64)
+    n3, err3 := strconv.ParseInt("42", 10, 64)
+    n4, err4 := strconv.ParseInt("xyz", 16, 64)
+    
+    fmt.Println(n1, err1)
+    fmt.Println(n2, err2)
+    fmt.Println(n3, err3)
+    fmt.Println(n4, err4)
+}
+```
+**Question:** What does each line print?
+
+**Answer:**
+- `255 <nil>` — `ff` in hex = 255
+- `10 <nil>` — `1010` in binary = 8+2 = 10
+- `42 <nil>`
+- `0 strconv.ParseInt: parsing "xyz": invalid syntax` — x, y, z are not valid hex!
+
+**Explanation:**
+- `ParseInt(s, base, bitSize)` — base is 2/8/10/16, bitSize is 32 or 64
+- Valid hex digits: `0-9`, `a-f`, `A-F` — `x`, `y`, `z` are invalid
+- On error, the returned int is `0` (not garbage)
+- Always check the error before using the result!
+
+**Key Concept:** `ParseInt` returns `0` on error — check `err != nil` before using the value!
+
+---
+
+### Problem 12: Hex to Decimal Conversion
+```go
+package main
+
+import (
+    "fmt"
+    "strconv"
+    "strings"
+)
+
+func hexToDec(s string) (int64, error) {
+    s = strings.TrimPrefix(strings.ToLower(s), "0x")
+    return strconv.ParseInt(s, 16, 64)
+}
+
+func main() {
+    values := []string{"ff", "0xFF", "0XFF", "FF", "10", "GG"}
+    
+    for _, v := range values {
+        result, err := hexToDec(v)
+        if err != nil {
+            fmt.Printf("%s -> ERROR\n", v)
+        } else {
+            fmt.Printf("%s -> %d\n", v, result)
+        }
+    }
+}
+```
+**Question:** What does each iteration print?
+
+**Answer:**
+```
+ff -> 255
+0xFF -> 255
+0XFF -> 255
+FF -> 255
+10 -> 16
+GG -> ERROR
+```
+
+**Explanation:**
+- `strings.ToLower` normalizes `"0XFF"` → `"0xff"`, `"FF"` → `"ff"`
+- `TrimPrefix(s, "0x")` removes the `0x` prefix if present — safe if not present
+- `"10"` in hex = 16 in decimal (not 10!)
+- `"GG"` fails — `G` is not a valid hex digit (only 0-9, a-f)
+
+**Key Concept:** `"10"` in hex = 16 decimal — always know your base when parsing!
+
+---
+
+### Problem 13: Binary to Decimal
+```go
+package main
+
+import (
+    "fmt"
+    "strconv"
+)
+
+func binToDec(s string) (int64, error) {
+    return strconv.ParseInt(s, 2, 64)
+}
+
+func main() {
+    tests := []string{"101", "1111", "10000000", "2", ""}
+    
+    for _, t := range tests {
+        result, err := binToDec(t)
+        if err != nil {
+            fmt.Printf("%q -> ERROR\n", t)
+        } else {
+            fmt.Printf("%q -> %d\n", t, result)
+        }
+    }
+}
+```
+**Question:** What does each line print?
+
+**Answer:**
+```
+"101" -> 5
+"1111" -> 15
+"10000000" -> 128
+"2" -> ERROR
+"" -> ERROR
+```
+
+**Explanation:**
+- `101` binary = 4+0+1 = 5
+- `1111` binary = 8+4+2+1 = 15
+- `10000000` = 2^7 = 128
+- `"2"` fails — binary only allows `0` and `1`
+- `""` fails — empty string is invalid for ParseInt
+
+**Key Concept:** Binary only uses `0` and `1` — any other digit causes a parse error!
+
+---
+
+### Problem 14: strconv.Atoi vs ParseInt
+```go
+package main
+
+import (
+    "fmt"
+    "strconv"
+)
+
+func main() {
+    a, err1 := strconv.Atoi("42")
+    b, err2 := strconv.Atoi("3.14")
+    c, err3 := strconv.Atoi("-17")
+    
+    fmt.Println(a, err1)
+    fmt.Println(b, err2)
+    fmt.Println(c, err3)
+    
+    s := strconv.Itoa(255)
+    fmt.Println(s, len(s))
+}
+```
+**Question:** What does each line print?
+
+**Answer:**
+- `42 <nil>`
+- `0 strconv.Atoi: parsing "3.14": invalid syntax` — Atoi is integers only!
+- `-17 <nil>` — Atoi handles negative numbers
+- `255 3` — "255" is 3 characters long
+
+**Explanation:**
+- `Atoi` = "ASCII to integer" — base 10 only, no floats, no other bases
+- `Atoi` is shorthand for `ParseInt(s, 10, 0)` — it returns `int` (not int64)
+- `Itoa` = "integer to ASCII" — converts int to base-10 string
+- For hex/binary parsing you MUST use `ParseInt` with the correct base
+
+**Key Concept:** `Atoi` is base-10 integers only — for other bases use `ParseInt`!
+
+---
+
+### Problem 15: ParseInt Bit Size Overflow
+```go
+package main
+
+import (
+    "fmt"
+    "strconv"
+)
+
+func main() {
+    // Max value for int8 is 127
+    a, err1 := strconv.ParseInt("127", 10, 8)
+    b, err2 := strconv.ParseInt("128", 10, 8)
+    c, err3 := strconv.ParseInt("128", 10, 64)
+    
+    fmt.Println(a, err1)
+    fmt.Println(b, err2)
+    fmt.Println(c, err3)
+}
+```
+**Question:** What does each line print?
+
+**Answer:**
+- `127 <nil>`
+- `127 strconv.ParseInt: parsing "128": value out of range` — 128 overflows int8, returns max value!
+- `128 <nil>` — int64 can hold 128 fine
+
+**Explanation:**
+- The bitSize (8, 16, 32, 64) limits the range of the parsed value
+- bitSize 8 = range [-128, 127] — 128 overflows
+- On overflow: returns the clamped max value (127) AND an error
+- Always use bitSize 64 unless you have a specific reason for smaller sizes
+
+**Key Concept:** On overflow, `ParseInt` returns the clamped max value AND an error — check both!
+
+---
+
+## BLOCK 4 — Text Parsing & Token Detection
+
+### Problem 16: Iterating Words
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    text := "hello (hex)ff world (bin)1010 end"
+    words := strings.Fields(text)
+    
+    for i, w := range words {
+        fmt.Printf("[%d] %q\n", i, w)
+    }
+}
+```
+**Question:** What gets printed?
+
+**Answer:**
+```
+[0] "hello"
+[1] "(hex)ff"
+[2] "world"
+[3] "(bin)1010"
+[4] "end"
+```
+
+**Explanation:**
+- `strings.Fields` splits on whitespace and returns a clean slice
+- Tokens like `(hex)ff` are treated as single words — no space inside them
+- Indexing with `i` gives us position information for look-ahead/look-behind
+- This is the foundation of a simple token parser
+
+**Key Concept:** `strings.Fields` preserves tokens like `(hex)ff` as single units!
+
+---
+
+### Problem 17: Look-Behind Token Parser
+```go
+package main
+
+import (
+    "fmt"
+    "strconv"
+    "strings"
+)
+
+func main() {
+    words := strings.Fields("hello (hex)ff world (bin)1010 end")
+    result := []string{}
+    
+    for _, w := range words {
+        switch {
+        case strings.HasPrefix(w, "(hex)"):
+            hex := strings.TrimPrefix(w, "(hex)")
+            n, err := strconv.ParseInt(hex, 16, 64)
+            if err == nil {
+                result = append(result, strconv.Itoa(int(n)))
+            }
+        case strings.HasPrefix(w, "(bin)"):
+            bin := strings.TrimPrefix(w, "(bin)")
+            n, err := strconv.ParseInt(bin, 2, 64)
+            if err == nil {
+                result = append(result, strconv.Itoa(int(n)))
+            }
+        default:
+            result = append(result, w)
+        }
+    }
+    
+    fmt.Println(strings.Join(result, " "))
+}
+```
+**Question:** What gets printed?
+
+**Answer:** `hello 255 world 10 end`
+
+**Explanation:**
+- `(hex)ff` → strip prefix → parse `"ff"` as hex → 255 → convert to string
+- `(bin)1010` → strip prefix → parse `"1010"` as binary → 10 → convert to string
+- Regular words pass through untouched
+- `strings.Join` reassembles with spaces
+- This is the classic **single-pass token substitution pipeline**
+
+**Key Concept:** Strip prefix → parse → convert back to string — single-pass pipeline pattern!
+
+---
+
+### Problem 18: The Modifier Token Problem
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    words := strings.Fields("my name is (upper) alice and i love (lower) GOLANG")
+    result := []string{}
+    
+    i := 0
+    for i < len(words) {
+        w := words[i]
+        if w == "(upper)" && i+1 < len(words) {
+            result = append(result, strings.ToUpper(words[i+1]))
+            i += 2
+        } else if w == "(lower)" && i+1 < len(words) {
+            result = append(result, strings.ToLower(words[i+1]))
+            i += 2
+        } else {
+            result = append(result, w)
+            i++
+        }
+    }
+    
+    fmt.Println(strings.Join(result, " "))
+}
+```
+**Question:** What gets printed?
+
+**Answer:** `my name is ALICE and i love golang`
+
+**Explanation:**
+- When `(upper)` is found, it consumes the NEXT word and uppercases it: skip 2 indices
+- When `(lower)` is found, it consumes the NEXT word and lowercases it: skip 2 indices
+- Regular words are added as-is and advance by 1
+- The `i+1 < len(words)` check prevents out-of-bounds panic if `(upper)` is the last word
+
+**Key Concept:** Look-ahead parsing consumes multiple tokens per iteration — use `i += 2` not `range`!
+
+---
+
+### Problem 19: Look-Behind Token (Previous Word)
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    words := strings.Fields("hello world (upper) go (lower) LANG")
+    result := []string{}
+    
+    for i, w := range words {
+        if w == "(upper)" {
+            if len(result) > 0 {
+                result[len(result)-1] = strings.ToUpper(result[len(result)-1])
+            }
+        } else if w == "(lower)" {
+            if len(result) > 0 {
+                result[len(result)-1] = strings.ToLower(result[len(result)-1])
+            }
+        } else {
+            result = append(result, w)
+            _ = i
+        }
+    }
+    
+    fmt.Println(strings.Join(result, " "))
+}
+```
+**Question:** What gets printed?
+
+**Answer:** `hello WORLD go lang`
+
+**Explanation:**
+- `(upper)` modifies the **previous** word already in result
+- `world` is added, then `(upper)` uppercases `result[len(result)-1]`
+- `go` is added, then `(lower)` lowercases `result[len(result)-1]` — but `go` is already lowercase
+- `LANG` is added as-is since it has no modifier after it
+
+**Key Concept:** Look-behind modifies the LAST element of the result slice — `result[len(result)-1]`!
+
+---
+
+### Problem 20: Punctuation Token — (cap)
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func capitalize(s string) string {
+    if len(s) == 0 {
+        return s
+    }
+    return strings.ToUpper(s[:1]) + strings.ToLower(s[1:])
+}
+
+func main() {
+    words := strings.Fields("this is (cap) a test (cap) of capitalization")
+    result := []string{}
+    
+    for _, w := range words {
+        if w == "(cap)" {
+            if len(result) > 0 {
+                result[len(result)-1] = capitalize(result[len(result)-1])
+            }
+        } else {
+            result = append(result, w)
+        }
+    }
+    
+    fmt.Println(strings.Join(result, " "))
+}
+```
+**Question:** What gets printed?
+
+**Answer:** `this is A test Of capitalization`
+
+**Explanation:**
+- `(cap)` uppercases the first letter of the previous word
+- `"a"` → `capitalize("a")` = `"A"` (upper first char + lower rest = just `"A"`)
+- `"test"` → is added normally, then `(cap)` → `"Test"` ... wait — let's re-read
+
+**Corrected trace:**
+- `this` → result: `["this"]`
+- `is` → result: `["this","is"]`
+- `(cap)` → capitalize `"is"` → `"Is"` → result: `["this","Is"]`
+- `a` → result: `["this","Is","a"]`
+- `test` → result: `["this","Is","a","test"]`
+- `(cap)` → capitalize `"test"` → `"Test"` → result: `["this","Is","a","Test"]`
+- `of` → result: `["this","Is","a","Test","of"]`
+- `capitalization` → result: `["this","Is","a","Test","of","capitalization"]`
+
+**Corrected Answer:** `this Is a Test of capitalization`
+
+**Key Concept:** Trace token parsers step by step — look-behind always targets the LAST added word!
+
+---
+
+## BLOCK 5 — Pipeline Design
+
+### Problem 21: Multi-Pass Pipeline
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func passOne(words []string) []string {
+    result := []string{}
+    for _, w := range words {
+        result = append(result, strings.TrimSpace(w))
+    }
+    return result
+}
+
+func passTwo(words []string) []string {
+    result := []string{}
+    for _, w := range words {
+        if w != "" {
+            result = append(result, w)
+        }
+    }
+    return result
+}
+
+func passThree(words []string) string {
+    return strings.Join(words, " ")
+}
+
+func main() {
+    input := []string{"  hello  ", "", "  world  ", "", "  go  "}
+    
+    step1 := passOne(input)
+    step2 := passTwo(step1)
+    step3 := passThree(step2)
+    
+    fmt.Printf("%q\n", step3)
+    fmt.Println(len(step1), len(step2))
+}
+```
+**Question:** What does each line print?
+
+**Answer:**
+- `"hello world go"`
+- `5 3` — passOne keeps all 5 (trimmed), passTwo removes the 2 empty strings
+
+**Explanation:**
+- Pass 1: trim each word → `["hello", "", "world", "", "go"]`
+- Pass 2: filter empty strings → `["hello", "world", "go"]`
+- Pass 3: join with spaces → `"hello world go"`
+- Each pass has a single responsibility — this is pipeline design
+- `len(step1) = 5` (same count, just trimmed), `len(step2) = 3` (empties removed)
+
+**Key Concept:** Pipeline passes each have ONE job — trim, then filter, then join!
+
+---
+
+### Problem 22: Pipeline with Conversion Pass
+```go
+package main
+
+import (
+    "fmt"
+    "strconv"
+    "strings"
+)
+
+func convertTokens(words []string) []string {
+    result := make([]string, 0, len(words))
+    for _, w := range words {
+        switch {
+        case strings.HasPrefix(w, "(hex)"):
+            n, err := strconv.ParseInt(strings.TrimPrefix(w, "(hex)"), 16, 64)
+            if err == nil {
+                result = append(result, strconv.Itoa(int(n)))
+            } else {
+                result = append(result, w)
+            }
+        case strings.HasPrefix(w, "(bin)"):
+            n, err := strconv.ParseInt(strings.TrimPrefix(w, "(bin)"), 2, 64)
+            if err == nil {
+                result = append(result, strconv.Itoa(int(n)))
+            } else {
+                result = append(result, w)
+            }
+        default:
+            result = append(result, w)
+        }
+    }
+    return result
+}
+
+func main() {
+    input := "val1 is (hex)1a val2 is (bin)111 invalid is (hex)zz"
+    words := strings.Fields(input)
+    converted := convertTokens(words)
+    fmt.Println(strings.Join(converted, " "))
+}
+```
+**Question:** What gets printed?
+
+**Answer:** `val1 is 26 val2 is 7 invalid is (hex)zz`
+
+**Explanation:**
+- `(hex)1a` → `1a` hex = 16+10 = 26 ✓
+- `(bin)111` → binary = 4+2+1 = 7 ✓
+- `(hex)zz` → `z` is not a valid hex digit → error → keep original `(hex)zz`
+- On parse error: preserve the original token (don't silently drop it)
+
+**Key Concept:** On conversion failure, preserve the original token — don't silently discard data!
+
+---
+
+### Problem 23: Chained Modifier Pipeline
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func applyModifiers(words []string) []string {
+    result := []string{}
+    for i := 0; i < len(words); i++ {
+        w := words[i]
+        switch w {
+        case "(upper)":
+            if i+1 < len(words) {
+                result = append(result, strings.ToUpper(words[i+1]))
+                i++
+            }
+        case "(lower)":
+            if i+1 < len(words) {
+                result = append(result, strings.ToLower(words[i+1]))
+                i++
+            }
+        default:
+            result = append(result, w)
+        }
+    }
+    return result
+}
+
+func main() {
+    input := "(upper) (lower) hello"
+    words := strings.Fields(input)
+    out := applyModifiers(words)
+    fmt.Println(strings.Join(out, " "))
+}
+```
+**Question:** What gets printed? This is a TRICKY edge case!
+
+**Answer:** `(lower) hello` — wait, let's trace:
+- `i=0`: `w = "(upper)"`, `words[1] = "(lower)"` → uppercase `"(lower)"` → `"(LOWER)"`, `i=2`
+- `i=2`: `w = "hello"` → append `"hello"`
+- Result: `["(LOWER)", "hello"]`
+
+**Corrected Answer:** `(LOWER) hello`
+
+**Explanation:**
+- `(upper)` doesn't know the next token is another modifier — it blindly uppercases it
+- `(LOWER)` is not recognized as a modifier token anymore (case-sensitive match!)
+- This is the edge case of **stacked/chained modifiers** — real parsers need to handle this
+- Solution: check if the next word is also a modifier before applying
+
+**Key Concept:** Modifier tokens applied to other modifier tokens create unexpected results — guard against this!
+
+---
+
+### Problem 24: Pipeline Immutability
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func process(words []string) []string {
+    for i, w := range words {
+        words[i] = strings.ToUpper(w)
+    }
+    return words
+}
+
+func main() {
+    original := []string{"hello", "world"}
+    processed := process(original)
+    
+    fmt.Println(original)
+    fmt.Println(processed)
+    fmt.Println(&original[0] == &processed[0])
+}
+```
+**Question:** What does each line print?
+
+**Answer:**
+- `[HELLO WORLD]` — original is MODIFIED!
+- `[HELLO WORLD]`
+- `true` — same underlying array!
+
+**Explanation:**
+- Slices are reference types — `process` modifies the ORIGINAL slice in-place
+- `processed` and `original` point to the same underlying array
+- This violates pipeline immutability — each pass should create a new slice
+- Fix: `result := make([]string, len(words))` and write to `result[i]`
+
+**Key Concept:** Modifying a slice parameter mutates the caller's data — always create new slices in pipelines!
+
+---
+
+## BLOCK 6 — Edge Case Handling
+
+### Problem 25: Empty Input Guards
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func firstWord(s string) string {
+    words := strings.Fields(s)
+    if len(words) == 0 {
+        return ""
+    }
+    return words[0]
+}
+
+func lastWord(s string) string {
+    words := strings.Fields(s)
+    return words[len(words)-1] // Bug?
+}
+
+func main() {
+    fmt.Println(firstWord("hello world"))
+    fmt.Println(firstWord(""))
+    fmt.Println(firstWord("   "))
+    
+    fmt.Println(lastWord("hello world"))
+    fmt.Println(lastWord(""))
+}
+```
+**Question:** What prints and what panics?
+
+**Answer:**
+- `hello`
+- `` (empty string)
+- `` (empty string) — `Fields` of whitespace-only string is `[]`
+- `world`
+- ❌ **PANIC** — `lastWord("")` → `Fields("")` = `[]` → `[][−1]` → index out of range!
+
+**Explanation:**
+- `strings.Fields("")` and `strings.Fields("   ")` both return an empty slice `[]`
+- `firstWord` correctly guards with `len(words) == 0`
+- `lastWord` has no guard — accessing `words[len(words)-1]` when len is 0 means `words[-1]` → panic
+- Always guard before indexing slices!
+
+**Key Concept:** `strings.Fields` on empty/whitespace input returns an empty slice — always guard!
+
+---
+
+### Problem 26: Args Edge Cases
+```go
+package main
+
+import (
+    "fmt"
+    "os"
+)
+
+func getArg(index int, fallback string) string {
+    if index < len(os.Args) {
+        return os.Args[index]
+    }
+    return fallback
+}
+
+func main() {
+    input := getArg(1, "input.txt")
+    output := getArg(2, "output.txt")
+    fmt.Println(input, output)
+}
+```
+**Run as:** `go run main.go myfile.txt`
+
+**Question:** What gets printed?
+
+**Answer:** `myfile.txt output.txt`
+
+**Explanation:**
+- `os.Args = ["main", "myfile.txt"]` — only 2 elements
+- `getArg(1, "input.txt")` → index 1 exists → returns `"myfile.txt"`
+- `getArg(2, "output.txt")` → index 2 does NOT exist → returns fallback `"output.txt"`
+- This is a clean way to provide default values for optional CLI arguments
+
+**Key Concept:** Bounds-check before accessing `os.Args` — provide sensible defaults for optional args!
+
+---
+
+### Problem 27: Handling Malformed Tokens
+```go
+package main
+
+import (
+    "fmt"
+    "strconv"
+    "strings"
+)
+
+func safeConvert(token string) string {
+    if !strings.HasPrefix(token, "(hex)") {
+        return token
+    }
+    
+    hex := strings.TrimPrefix(token, "(hex)")
+    
+    if hex == "" {
+        return token
+    }
+    
+    n, err := strconv.ParseInt(hex, 16, 64)
+    if err != nil {
+        return token
+    }
+    
+    return strconv.Itoa(int(n))
+}
+
+func main() {
+    tests := []string{
+        "(hex)ff",
+        "(hex)",
+        "(hex)zz",
+        "(hex)0",
+        "notahex",
+    }
+    for _, t := range tests {
+        fmt.Printf("%q -> %q\n", t, safeConvert(t))
+    }
+}
+```
+**Question:** What does each line print?
+
+**Answer:**
+```
+"(hex)ff" -> "255"
+"(hex)" -> "(hex)"
+"(hex)zz" -> "(hex)zz"
+"(hex)0" -> "0"
+"notahex" -> "notahex"
+```
+
+**Explanation:**
+- `(hex)ff` → valid → converts to 255
+- `(hex)` → empty string after prefix → return original token
+- `(hex)zz` → invalid hex → ParseInt fails → return original token
+- `(hex)0` → valid → 0 in hex = 0
+- `"notahex"` → no prefix match → pass through
+- Each guard handles a specific failure mode: no prefix, empty value, invalid chars
+
+**Key Concept:** Layered guards — check prefix, check empty, check parse error — in that order!
+
+---
+
+### Problem 28: The Off-By-One in Slice Delete
+```go
+package main
+
+import "fmt"
+
+func removeIndex(s []string, i int) []string {
+    return append(s[:i], s[i+1:]...)
+}
+
+func main() {
+    words := []string{"a", "b", "c", "d", "e"}
+    
+    fmt.Println(removeIndex(words, 0))
+    fmt.Println(removeIndex(words, 4))
+    fmt.Println(removeIndex(words, 2))
+    
+    defer func() {
+        if r := recover(); r != nil {
+            fmt.Println("PANIC:", r)
+        }
+    }()
+    fmt.Println(removeIndex(words, 5))
+}
+```
+**Question:** What does each line print?
+
+**Answer:**
+```
+[b c d e]
+[a b c d]
+[a b d e]  <- wait, but words was modified by earlier calls!
+```
+
+**Corrected trace:** `words` is modified in place by the first `removeIndex` call (append modifies underlying array)!
+
+**Actually:** Each call is on the same `words` slice which shares the same backing array. The first `removeIndex(words, 0)` returns `[b c d e]` but ALSO modifies `words`'s backing array. By the third call `words` may be `[b c d d e]` in the backing array.
+
+**Simplified Answer for discussion:**
+- `removeIndex(words, 5)` → `s[5:]` = `s[6]` on a 5-element slice → **PANIC**: index out of range
+- The recover catches it and prints: `PANIC: runtime error: index out of range [5] with length 5`
+
+**Key Concept:** Removing the last element (`i == len-1`) is valid; removing beyond bounds panics!
+
+---
+
+### Problem 29: Newline Handling in File Content
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    // Simulating file content read with os.ReadFile
+    fileContent := "hello world\nfoo bar\nbaz\n"
+    
+    // Approach A
+    linesA := strings.Split(fileContent, "\n")
+    
+    // Approach B
+    linesB := strings.Fields(fileContent)
+    
+    fmt.Println(len(linesA))
+    fmt.Println(len(linesB))
+    fmt.Printf("%q\n", linesA[len(linesA)-1])
+}
+```
+**Question:** What does each line print?
+
+**Answer:**
+- `4` — Split creates an EXTRA empty string after the trailing `\n`
+- `6` — Fields splits on all whitespace including `\n`, gives individual words
+- `""` — the trailing empty string after the final `\n`
+
+**Explanation:**
+- `strings.Split("a\nb\n", "\n")` = `["a", "b", ""]` — trailing newline creates trailing empty element
+- This is a very common file-reading bug — always filter empty strings after splitting on `\n`
+- `strings.Fields` treats `\n` as whitespace — good for word-level processing
+- For line-level processing: `Split` then filter, or use `bufio.Scanner`
+
+**Key Concept:** `Split` on `\n` creates a trailing empty string if file ends with newline — always filter it!
+
+---
+
+### Problem 30: Consecutive Modifier Edge Case
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func process(words []string) []string {
+    result := []string{}
+    for _, w := range words {
+        switch w {
+        case "(upper)":
+            if len(result) > 0 {
+                result[len(result)-1] = strings.ToUpper(result[len(result)-1])
+            }
+        case "(lower)":
+            if len(result) > 0 {
+                result[len(result)-1] = strings.ToLower(result[len(result)-1])
+            }
+        default:
+            result = append(result, w)
+        }
+    }
+    return result
+}
+
+func main() {
+    // Edge case: modifier at start (no previous word)
+    a := process(strings.Fields("(upper) hello world"))
+    
+    // Edge case: two modifiers in a row
+    b := process(strings.Fields("hello (upper) (lower) world"))
+    
+    // Edge case: modifier at end
+    c := process(strings.Fields("hello world (upper)"))
+    
+    fmt.Println(strings.Join(a, " "))
+    fmt.Println(strings.Join(b, " "))
+    fmt.Println(strings.Join(c, " "))
+}
+```
+**Question:** What does each line print?
+
+**Answer:**
+- `hello world` — `(upper)` at start: `len(result) == 0` → skipped entirely
+- `hello WORLD` — wait, trace: `hello` added → `(upper)` → `HELLO` → `(lower)` → `hello` → `world` added
+
+**Corrected trace b:**
+- `"hello"` → result: `["hello"]`
+- `"(upper)"` → uppercase last → `["HELLO"]`
+- `"(lower)"` → lowercase last → `["hello"]`
+- `"world"` → result: `["hello", "world"]`
+
+**Answer b:** `hello world` — the two modifiers cancel each other out!
+
+**Answer c:** `hello WORLD` — `(upper)` at end uppercases `"world"`
+
+**Final Answers:**
+- `hello world` (modifier at start silently skipped)
+- `hello world` (upper then lower cancel out)
+- `hello WORLD` (modifier at end works normally)
+
+**Key Concept:** Two consecutive modifiers cancel out — modifier at start with no previous word is silently skipped!
+
+---
+
+## 🎯 BONUS CHALLENGE: Full Pipeline Integration
+
+### Problem 31: Complete Transform Pipeline
+```go
+package main
+
+import (
+    "fmt"
+    "strconv"
+    "strings"
+)
+
+func tokenize(content string) []string {
+    return strings.Fields(content)
+}
+
+func convertNumbers(words []string) []string {
+    result := make([]string, 0, len(words))
+    for _, w := range words {
+        switch {
+        case strings.HasPrefix(w, "(hex)"):
+            n, err := strconv.ParseInt(strings.TrimPrefix(w, "(hex)"), 16, 64)
+            if err == nil {
+                result = append(result, strconv.Itoa(int(n)))
+            } else {
+                result = append(result, w)
+            }
+        case strings.HasPrefix(w, "(bin)"):
+            n, err := strconv.ParseInt(strings.TrimPrefix(w, "(bin)"), 2, 64)
+            if err == nil {
+                result = append(result, strconv.Itoa(int(n)))
+            } else {
+                result = append(result, w)
+            }
+        default:
+            result = append(result, w)
+        }
+    }
+    return result
+}
+
+func applyCase(words []string) []string {
+    result := []string{}
+    for i := 0; i < len(words); i++ {
+        w := words[i]
+        switch w {
+        case "(upper)":
+            if i+1 < len(words) {
+                result = append(result, strings.ToUpper(words[i+1]))
+                i++
+            }
+        case "(lower)":
+            if i+1 < len(words) {
+                result = append(result, strings.ToLower(words[i+1]))
+                i++
+            }
+        case "(cap)":
+            if i+1 < len(words) {
+                next := words[i+1]
+                capped := strings.ToUpper(next[:1]) + strings.ToLower(next[1:])
+                result = append(result, capped)
+                i++
+            }
+        default:
+            result = append(result, w)
+        }
+    }
+    return result
+}
+
+func assemble(words []string) string {
+    return strings.Join(words, " ")
+}
+
+func main() {
+    input := "There are (hex)ff zombies and (bin)1010 (upper) heroes"
+    
+    step1 := tokenize(input)
+    step2 := convertNumbers(step1)
+    step3 := applyCase(step2)
+    output := assemble(step3)
+    
+    fmt.Println(output)
+}
+```
+**Question:** What gets printed? Trace every step.
+
+**Answer:** `There are 255 zombies and 10 HEROES`
+
+**Step-by-step trace:**
+- Step 1 (tokenize): `["There", "are", "(hex)ff", "zombies", "and", "(bin)1010", "(upper)", "heroes"]`
+- Step 2 (convertNumbers):
+  - `(hex)ff` → 255 → `"255"`
+  - `(bin)1010` → 10 → `"10"`
+  - Result: `["There", "are", "255", "zombies", "and", "10", "(upper)", "heroes"]`
+- Step 3 (applyCase):
+  - `(upper)` consumes `heroes` → `"HEROES"`, skip 2
+  - Result: `["There", "are", "255", "zombies", "and", "10", "HEROES"]`
+- Step 4 (assemble): `"There are 255 zombies and 10 HEROES"`
+
+**Key Concept:** Order of pipeline passes MATTERS — convert numbers first, THEN apply case modifiers!
+
+---
+
+### Problem 32: Pipeline Order Dependency
+```go
+package main
+
+import (
+    "fmt"
+    "strings"
+)
+
+func main() {
+    input := "(upper) (hex)ff"
+    words := strings.Fields(input)
+    
+    // Pipeline A: case first, then convert
+    // Pipeline B: convert first, then case
+    
+    // Simulate Pipeline A
+    resultA := []string{}
+    for i := 0; i < len(words); i++ {
+        if words[i] == "(upper)" && i+1 < len(words) {
+            resultA = append(resultA, strings.ToUpper(words[i+1]))
+            i++
+        } else {
+            resultA = append(resultA, words[i])
+        }
+    }
+    // Then convert
+    for j, w := range resultA {
+        if strings.HasPrefix(w, "(HEX)") {
+            resultA[j] = "CONVERTED"
+        }
+    }
+    
+    fmt.Println("Pipeline A:", strings.Join(resultA, " "))
+    
+    // Simulate Pipeline B (convert first)
+    fmt.Println("Pipeline B: 255")
+}
+```
+**Question:** What does Pipeline A print? Why does Pipeline B give a different result?
+
+**Answer:**
+- Pipeline A: `(HEX)FF` — the `(upper)` uppercases the token `(hex)ff` to `(HEX)FF`, but then the conversion step looks for `(HEX)` prefix which doesn't match the conversion logic expecting lowercase `(hex)`
+- Pipeline B: `255` — converting numbers first turns `(hex)ff` → `255`, then there's nothing for `(upper)` to uppercase (it was consumed... or it uppercases `255` → `255`)
+
+**Explanation:**
+- Pass order is critical — uppercasing `(hex)ff` to `(HEX)FF` breaks the hex detection if it's case-sensitive
+- Always run **number conversion passes before case modifier passes**
+- This is why pipeline design requires careful thought about dependencies between passes
+
+**Key Concept:** Passes that transform tokens must run BEFORE passes that read those token formats!
+
+---
+
+## 🏆 You Are Now the Pipeline Monster!
+
+### Quick Reference:
+| Topic | Key Rule |
+|-------|----------|
+| `os.Args[0]` | Always the binary — user args start at `[1]` |
+| `os.WriteFile` | Always overwrites — never appends |
+| `strings.Fields` | Handles multiple/leading/trailing spaces |
+| `strings.Split` | Literal split — creates empty strings |
+| `TrimPrefix` | Safe — does nothing if prefix absent |
+| `ParseInt(s,base,bits)` | Returns `0` AND error on failure |
+| `Atoi` | Base-10 only — use ParseInt for hex/bin |
+| Look-ahead | Use `i += 2` — must use index loop not range |
+| Look-behind | `result[len(result)-1]` — guard with `len > 0` |
+| Pipeline passes | Each pass does ONE thing — order matters |
+| File + newlines | `Split("\n")` leaves trailing empty string |
+| Slice modification | Passing slice to func can mutate caller's data |
+
+**Master these and you'll handle any text processing pipeline in Go! 💪🔥**
